@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cnegng"
+version = "0.0.1"
+authors = [
+  { name="Meleneth", email="meleneth@gmail.com" }
+]
+description = "Prototype some systems for cnecomicz's Gold & Gallows"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "black",
+  "flexmock",
+  "pylint",
+  "pytest",
+  "pytest-cov",
+  "python-statemachine"
+]
+
+[template.plugins.default]
+src-layout = true
+
+[project.urls]
+Homepage = "https://github.com/meleneth/cnegng"
+Issues = "https://github.com/meleneth/cnegng/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cnegng"]
+
+[project.scripts]
+cnegng = "cnegng.main:main"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
