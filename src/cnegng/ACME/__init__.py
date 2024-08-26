@@ -1,1 +1,1 @@
-import PyGameEventHandler from cnegng.ACME.pygame_event_handler
+from cnegng.ACME.pygame_event_handler import PyGameEventHandler
