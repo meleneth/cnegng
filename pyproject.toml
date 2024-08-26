@@ -22,7 +22,8 @@ dependencies = [
   "pylint",
   "pytest",
   "pytest-cov",
-  "python-statemachine"
+  "python-statemachine",
+  "sphinx"
 ]
 
 [template.plugins.default]
