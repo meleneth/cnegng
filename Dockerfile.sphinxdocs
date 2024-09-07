@@ -1,0 +1,21 @@
+FROM debian:latest AS build
+
+RUN apt-get update && apt-get install -y python3 python3-pip
+
+RUN mkdir -p /data/app
+COPY requirements.txt /data/app
+
+WORKDIR /data/app
+
+RUN pip install -r requirements.txt --break-system-packages
+
+COPY . /data/app
+
+RUN ./generate_docs.sh
+
+FROM nginx:latest
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /data/app/docs/build /usr/share/nginx/html
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

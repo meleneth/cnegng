@@ -1,0 +1,6 @@
+black
+flexmock
+pylint
+pytest
+pytest-cov
+sphinx
