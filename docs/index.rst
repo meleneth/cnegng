@@ -11,4 +11,3 @@ cnegng documentation
    :caption: Contents:
 
    modules
-   api

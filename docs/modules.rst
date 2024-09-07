@@ -13,7 +13,7 @@ Cnegng Modules
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: cnegng.ACME.PyGameEventHandler
+.. automodule:: cnegng.ACME.pygame_event_handler
    :members:
    :undoc-members:
    :show-inheritance:

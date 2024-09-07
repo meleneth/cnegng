@@ -8,7 +8,7 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../src/cnegng'))
+sys.path.insert(0, os.path.abspath('../src'))
 
 project = 'cnegng'
 copyright = '2024, Meleneth'
@@ -26,7 +26,8 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-
+autosummary_imported_members = True
+autosummary_generate = True
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
