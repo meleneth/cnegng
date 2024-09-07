@@ -13,6 +13,7 @@ class SpecificEventHandler(PyGameEventHandler):
     def handle_specific_event(self, event):
         self.some_flag = True
 
+
 class MultiKeyEventHandler(PyGameEventHandler):
     def __init__(self):
         self.some_value = 0
@@ -23,12 +24,14 @@ class MultiKeyEventHandler(PyGameEventHandler):
     def handle_specific_event(self, event):
         self.some_value = self.some_value + 1
 
+
 def test_pygame_event_handler():
     event_handler = SpecificEventHandler()
     fake_event = flexmock(type="some_event_type")
     assert not event_handler.some_flag
     event_handler.handle_event(fake_event)
     assert event_handler.some_flag
+
 
 def test_pygame_key_event_handler():
     event_handler = MultiKeyEventHandler()
