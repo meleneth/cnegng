@@ -18,3 +18,8 @@ Cnegng Modules
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: cnegng.ACME.basic_stats
+   :members:
+   :undoc-members:
+   :show-inheritance:
+

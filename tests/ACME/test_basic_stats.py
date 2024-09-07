@@ -54,7 +54,6 @@ def test_basic_stats_dir_is_attributes_based():
     assert dir(ring) == ['maximum_life']
 
 def test_player_wearing_ring_is_buff():
-
     player = basic_player()
     ring = small_vit_ring()
 
@@ -64,12 +63,9 @@ def test_player_wearing_ring_is_buff():
 def test_player_if_ring_gets_better_we_notice():
     player = basic_player()
     ring = small_vit_ring()
-
-
     active_stats = player.wearing(ring)
 
     assert active_stats.maximum_life == 80  # 60 base + 20 ring
-
     # Update the ring's maximum_life, and the player's active stats should reflect this immediately
     setattr(ring, "maximum_life", 20)
     assert active_stats.maximum_life == 80
@@ -77,7 +73,6 @@ def test_player_if_ring_gets_better_we_notice():
 def test_wearing_two_vit_rings():
     player = basic_player()
     ring1 = small_vit_ring()
-
     ring2 = small_vit_ring()
 
     active_stats = player.wearing(ring1, ring2)
@@ -86,8 +81,6 @@ def test_wearing_two_vit_rings():
 def test_wearing_percentage_ring():
     player = basic_player()
     ring = percent_life_ring()
-
-
     active_stats = player.wearing(ring)
 
     assert active_stats.maximum_life == 90  # 60 base * 1.5
@@ -96,7 +89,6 @@ def test_wearing_flat_and_percentage_ring():
     player = basic_player()
     ring_flat = small_vit_ring()
     ring_percent = percent_life_ring()
-
     active_stats = player.wearing(ring_flat, ring_percent)
 
     assert active_stats.maximum_life == 120  # (60 base + 20 flat) * 1.5 = 120
