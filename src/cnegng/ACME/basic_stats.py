@@ -9,7 +9,6 @@ class StatModifierChain:
         self.base_value = base_value
         self.modifiers = []
 
-
     def add_modifier(self, modifier_func):
         """
         Adds a new modifier function to the chain. Each modifier function should accept a base value and return
@@ -19,7 +18,6 @@ class StatModifierChain:
         :param modifier_func: A function that takes the base value and modifies it.
         """
         self.modifiers.append(modifier_func)
-
 
     def get_value(self):
         """
@@ -33,7 +31,6 @@ class StatModifierChain:
         for modifier in self.modifiers:
             value = modifier(value)  # Apply each modifier in the chain
         return value
-
 
 
 class BasicStats:
@@ -58,7 +55,6 @@ class BasicStats:
         return list(self._specified_keys)
 
 
-
 class AttributeModifier:
     def __init__(self, stat_name, modification_type, value):
         """
@@ -81,14 +77,13 @@ class AttributeModifier:
         :param base_value: The current value of the stat before modification.
         :return: The modified stat value.
         """
-        if self.modification_type == 'flat':
+        if self.modification_type == "flat":
             return base_value + self.value
-        elif self.modification_type == 'percent':
+        elif self.modification_type == "percent":
 
             return base_value * (1 + self.value)
 
         return base_value
-
 
 
 class Player(BasicStats):
@@ -118,7 +113,6 @@ class PlayerWearingStats:
         self.items = items
         self.modifier_chains = {}
 
-
         # For each stat in the base player, create a modifier chain starting from the base stat's value
         for stat in base_stats._specified_keys:
             self.modifier_chains[stat] = StatModifierChain(getattr(base_stats, stat))
@@ -146,7 +140,9 @@ class PlayerWearingStats:
 
             return self.modifier_chains[name].get_value()
 
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
 
     def __dir__(self):
         """
@@ -168,7 +164,6 @@ class ItemWithModifiers:
 
         self.modifiers = modifiers
 
-
     def get_modifiers(self):
         """
         Retrieves the list of modifiers associated with this item.
@@ -184,4 +179,3 @@ class ItemWithModifiers:
         :return: A list of stat names that the item affects.
         """
         return [modifier.stat_name for modifier in self.modifiers]
-
