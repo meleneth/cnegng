@@ -2,14 +2,38 @@ import pygame
 
 
 class DuplicateHandlersError(Exception):
+    """Raised when a handler already exists for a given event_type"""
     pass
 
 
 class KeyEventHandler:
+    """Handler to handle matching the .key attribute on PyGame generated events"""
     def __init__(self):
         self.key_event_handlers = {}
 
     def register_key_event(self, key, handler_method):
+        """
+        Registers a handler method for the specified key.
+
+        :param key: The key constant from pygame (e.g., ``pygame.K_RETURN``).
+        :type key: int
+        :param handler_method: The method to call when the key is pressed.
+        :type handler_method: function
+
+        :Example:
+
+        .. code-block:: python
+
+            class SomeClass:
+                def handle_up_arrow(self):
+                    print("Up arrow pressed!")
+
+            key_handler = KeyEventHandler()
+            some_instance = SomeClass()
+            key_handler.register_key_event(pygame.K_UP, some_instance.handle_up_arrow)
+            # Now, whenever pygame.K_UP is pressed, handle_up_arrow will be invoked.
+
+        """
         if key in self.key_event_handlers:
             raise DuplicateHandlersError(
                 f'Duplicate key handler configured for key "{key}"'
