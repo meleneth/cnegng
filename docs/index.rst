@@ -10,4 +10,5 @@ cnegng documentation
    :maxdepth: 2
    :caption: Contents:
 
-   modules
+   event_handling
+   basic_stats
