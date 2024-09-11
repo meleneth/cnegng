@@ -1,4 +1,5 @@
-from cnegng.ACME.stats.stat_modifier_chain import StatModifierChain
+from collections import defaultdict
+
 
 class PlayerWearingStats:
     def __init__(self, base_stats, *items):
@@ -10,24 +11,12 @@ class PlayerWearingStats:
         :param items: A list of items, where each item contains modifiers to be applied to the player's stats.
         """
 
+        self.modifier_chains = defaultdict(list)
         self.base_stats = base_stats
-        self.items = items
-        self.modifier_chains = {}
 
-        # For each stat in the base player, create a modifier chain starting from the base stat's value
-        for stat in base_stats._specified_keys:
-            self.modifier_chains[stat] = StatModifierChain(getattr(base_stats, stat))
-
-        # Apply each item's modifiers to the appropriate stats
         for item in items:
-            for modifier in item.get_modifiers():
-                # If the stat doesn't exist in base stats, we initialize the modifier chain with 0
-                if modifier.stat_name not in self.modifier_chains:
-                    self.modifier_chains[modifier.stat_name] = StatModifierChain(0)
-
-                self.modifier_chains[modifier.stat_name].add_modifier(
-                    lambda base, mod=modifier: mod.apply(base)
-                )
+            for modifier in item.modifiers:
+                self.modifier_chains[modifier.stat_name].append(modifier)
 
     def __getattr__(self, name):
         """
@@ -37,12 +26,13 @@ class PlayerWearingStats:
         :return: The final calculated value of the stat.
         :raises AttributeError: If the stat is not found.
         """
-        if (modifier_chain := self.modifier_chains.get(name)) is not None:
-            return modifier_chain.get_value()
 
-        raise AttributeError(
-            f"'{self.__class__.__name__}' object has no attribute '{name}'"
-        )
+        value = getattr(self.base_stats, name) or 0
+        for modifier in self.modifier_chains[name]:
+            print(f"{value} getting modded")
+            value = modifier.apply(value)
+        print(">.>")
+        return value
 
     def __dir__(self):
         """

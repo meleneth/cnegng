@@ -20,10 +20,11 @@ class AttributeModifier:
         :param base_value: The current value of the stat before modification.
         :return: The modified stat value.
         """
+        print(
+            f"{self} is calcing from {base_value} with {self.value} for {self.stat_name}"
+        )
         if self.modification_type == "flat":
             return base_value + self.value
         elif self.modification_type == "percent":
-
             return base_value * (1 + self.value)
-
         return base_value
