@@ -1,6 +1,7 @@
 from cnegng.ACME.stats.player_wearing_stats import PlayerWearingStats
 from cnegng.ACME.stats.basic_stats import BasicStats
 
+
 class Player(BasicStats):
     def wearing(self, *items):
         """

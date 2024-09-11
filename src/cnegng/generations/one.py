@@ -1,5 +1,6 @@
 from cnegng.ACME import BasicStats, ItemWithModifiers, AttributeModifier
 
+
 def basic_player():
     """
     Creates a basic player with 60 maximum life.

@@ -2,6 +2,7 @@ import pygame
 
 from cnegng.ACME.events.key_event_handler import KeyEventHandler
 
+
 class PyGameEventHandler:
     """
     A class to register and handle pygame events.
