@@ -11,6 +11,7 @@ class PlayerWearingStats:
         :param items: A list of items, where each item contains modifiers to be applied to the player's stats.
         """
 
+        # autovivify dict values as empty arrays
         self.modifier_chains = defaultdict(list)
         self.base_stats = base_stats
 
@@ -29,9 +30,7 @@ class PlayerWearingStats:
 
         value = getattr(self.base_stats, name) or 0
         for modifier in self.modifier_chains[name]:
-            print(f"{value} getting modded")
             value = modifier.apply(value)
-        print(">.>")
         return value
 
     def __dir__(self):
