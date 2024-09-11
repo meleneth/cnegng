@@ -1,6 +1,7 @@
-import pytest
-from cnegng.ACME import LootTable
 import random
+import pytest
+
+from cnegng.ACME import LootTable
 
 
 @pytest.fixture

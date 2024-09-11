@@ -1,8 +1,23 @@
+from typing import List, Dict, Any, Optional
+
+
 class ItemWithModifiers:
+    """
+    Represents an item with stat modifiers.
+
+    Attributes
+    ==========
+    name : str
+        The name of the item
+    modifiers : list[AttributeModifier]
+    """
+
     def __init__(self, *modifiers):
         """
         Initializes an item that can modify the player's stats. Each item contains a list of AttributeModifier instances
         that apply modifications to the player's stats.
+
+
 
         :param modifiers: A list of AttributeModifier objects that define how the item's effects modify player stats.
         """

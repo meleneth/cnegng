@@ -1,4 +1,4 @@
-from cnegng.ACME import BasicStats, ItemWithModifiers, AttributeModifier
+from cnegng.ACME import BasicStats, ItemWithModifiers, AttributeModifier, LootTable
 
 
 def basic_player():
@@ -43,3 +43,28 @@ def percent_life_ring():
     :return: An ItemWithModifiers object with a 50% 'percent' modifier to 'maximum_life'.
     """
     return ItemWithModifiers(AttributeModifier("maximum_life", "percent", 0.5))
+
+
+def boss_helm():
+    """
+    Creates a helm that is so boss.
+
+
+    :return: An ItemWithModifiers object with a 50% 'percent' modifier to 'maximum_life'.
+    """
+    return ItemWithModifiers(AttributeModifier("maximum_life", "percent", 0.5))
+
+
+def basic_loot_table():
+    drops = LootTable()
+    drops.add_entry(1 / 4, lambda: small_vit_ring())
+    drops.add_entry(1 / 32, lambda: percent_life_ring())
+    return drops
+
+
+def boss_loot_table():
+    basic_loot = basic_loot_table()
+    drops = LootTable()
+    drops.add_entry(1 / 2, lambda: boss_helm())
+    basic_loot.copy_loot_to(drops)
+    return drops

@@ -1,5 +1,6 @@
 from cnegng.ACME import PlayerWearingStats
-from cnegng.generations.one import basic_player, small_vit_ring, percent_life_ring
+from cnegng.generations.one.characters import basic_player
+from cnegng.generations.one.items import small_vit_ring, percent_life_ring
 
 
 def test_basic_stats_dir_is_attributes_based():

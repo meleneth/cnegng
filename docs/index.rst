@@ -12,3 +12,4 @@ cnegng documentation
 
    event_handling
    basic_stats
+   loot_tables

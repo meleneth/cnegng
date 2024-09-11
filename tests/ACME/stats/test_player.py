@@ -1,4 +1,4 @@
-from cnegng.generations.one import basic_player
+from cnegng.generations.one.characters import basic_player
 
 
 def test_basic_player_is_basic():
