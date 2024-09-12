@@ -1,29 +1,29 @@
-.. _loot_tables:
+.. _generation_one:
 
-Loot Table
-===========
+Generation One
+==============
 
-.. automodule:: cnegng.ACME.generations.one
+.. automodule:: cnegng.generations.one
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: cnegng.ACME.generations.one.items
+.. automodule:: cnegng.generations.one.items
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: cnegng.ACME.generations.one.loot_tables
+.. automodule:: cnegng.generations.one.loot_tables
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: cnegng.ACME.generations.one.characters
+.. automodule:: cnegng.generations.one.characters
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: cnegng.ACME.generations.one.gear_set
+.. automodule:: cnegng.generations.one.gear_set
    :members:
    :undoc-members:
    :show-inheritance:
