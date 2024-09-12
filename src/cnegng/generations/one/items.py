@@ -1,6 +1,30 @@
 from cnegng.ACME import ItemWithModifiers, AttributeModifier, LootTable
 
 
+def ring_of_power():
+    """
+
+    Creates a ring that adds a flat +10 to 'strength'.
+
+
+    :return: An ItemWithModifiers object with a +10 'flat' modifier to 'strength'.
+
+    """
+    return ItemWithModifiers(AttributeModifier.create_flat("strength", 10))
+
+
+def ring_of_agility():
+    """
+
+    Creates a ring that adds a flat +5 to 'agility'.
+
+
+    :return: An ItemWithModifiers object with a +5 'flat' modifier to 'agility'.
+
+    """
+    return ItemWithModifiers(AttributeModifier.create_flat("agility", 5))
+
+
 def small_vit_ring():
     """
 

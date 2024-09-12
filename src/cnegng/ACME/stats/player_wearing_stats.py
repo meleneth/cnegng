@@ -28,7 +28,9 @@ class PlayerWearingStats:
         :raises AttributeError: If the stat is not found.
         """
 
-        value = getattr(self.base_stats, name) or 0
+        value = 0
+        if hasattr(self.base_stats, name):
+            value = getattr(self.base_stats, name)
         for modifier in self.modifier_chains[name]:
             value = modifier.apply(value)
         return value

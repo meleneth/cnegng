@@ -23,8 +23,3 @@ Basic Stats
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: cnegng.ACME.stats.stat_modifier_chain
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
