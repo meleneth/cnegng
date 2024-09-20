@@ -2,7 +2,7 @@ from typing import Tuple
 import math
 import random
 
-from cnegng.ACME.spatial2d import Position
+from cnegng.ACME.spatial2d.position import Position
 
 
 class Motion:

@@ -60,6 +60,7 @@ class TinyShape(GameHandler):
     def render(self) -> None:
         for sprite in self.sprites:
             # what happened to tell, don't ask?
+            # also, since SCALE is only width, this is clearly wrong
             screen_x = int(sprite.position.x * SCALE)
             screen_y = int(sprite.position.y * SCALE)
             self.surface.blit(sprite.texture, (screen_x, screen_y))
