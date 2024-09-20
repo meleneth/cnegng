@@ -25,6 +25,7 @@ class TinyShape(GameHandler):
         super().__init__(screen_size=(SCREEN_WIDTH, SCREEN_HEIGHT))
         self.target_direction = Motion()
         self.current_direction = Motion(speed=GRAVITY_FORCE)
+        self.change_global_motion()
         self.area = Area(
             position=Position(0, 0),
             dimensions=Dimensions(COORDINATE_SPACE, COORDINATE_SPACE),
