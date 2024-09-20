@@ -2,7 +2,7 @@ from typing import Tuple
 import math
 import random
 
-from cnegng.ACME.spatial2d.position import Position
+from cnegng.ACME.spatial2d import Position
 
 
 class Motion:
@@ -56,3 +56,12 @@ class Motion:
         """
         self.direction = random.uniform(*direction_range)
         self.speed = random.uniform(*speed_range)
+
+    def lerp(self, target, dt):
+        # Smoothly transition to the new direction (linear interpolation)
+        angle_diff = (target.direction - self.direction) % (2 * math.pi)
+        if angle_diff > math.pi:
+            angle_diff -= 2 * math.pi
+        # Adjust the current direction based on the angle difference, at a rate of 0.5 radians per second
+        self.direction += angle_diff * min(dt, 0.25)
+        self.direction %= 2 * math.pi

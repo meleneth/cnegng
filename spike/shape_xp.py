@@ -67,21 +67,22 @@ def create_sprite_from_name(name: str) -> pygame.Surface:
     generate_shape_from_hash(hash_value, sprite_surface)
     return sprite_surface
 
+
 class Sprite:
     def __init__(self, texture: pygame.Surface):
         # Position in virtual coordinate space (1 million by 1 million)
         self.x = random.uniform(0, COORDINATE_SPACE)
         self.y = random.uniform(0, COORDINATE_SPACE)
-        
+
         # Random direction (angle in radians)
         self.direction = random.uniform(0, 2 * math.pi)
-        
+
         # Random speed
         self.speed = random.uniform(50, 4000)  # Virtual units per second
-        
+
         # Sprite texture
         self.texture = texture
-    
+
     def update(self, dt: float, gravity_direction: float):
         """Update the sprite's position based on its speed and direction."""
         self.x += math.cos(self.direction) * self.speed * dt
@@ -91,7 +92,6 @@ class Sprite:
         self.x += math.cos(gravity_direction) * GRAVITY_FORCE * dt
         self.y += math.sin(gravity_direction) * GRAVITY_FORCE * dt
 
-        
         # Handle edge collision (wrapping by default)
         self.wrap()
 
@@ -101,7 +101,7 @@ class Sprite:
             self.x += COORDINATE_SPACE
         elif self.x > COORDINATE_SPACE:
             self.x -= COORDINATE_SPACE
-        
+
         if self.y < 0:
             self.y += COORDINATE_SPACE
         elif self.y > COORDINATE_SPACE:
@@ -113,9 +113,12 @@ class Sprite:
         screen_y = int(self.y * SCALE)
         surface.blit(self.texture, (screen_x, screen_y))
 
+
 class Gravity:
     def __init__(self, switch_interval=4.0):
-        self.current_direction = random.uniform(0, 2 * math.pi)  # Current gravity direction in radians
+        self.current_direction = random.uniform(
+            0, 2 * math.pi
+        )  # Current gravity direction in radians
         self.target_direction = self.current_direction
         self.time_since_last_change = 0.0
         self.switch_interval = switch_interval  # How often to pick a new direction
@@ -123,20 +126,20 @@ class Gravity:
     def update(self, dt: float):
         """Update the gravity direction, transitioning towards the target direction."""
         self.time_since_last_change += dt
-        
+
         # Pick a new gravity direction every `switch_interval` seconds
         if self.time_since_last_change > self.switch_interval:
             self.target_direction = random.uniform(0, 2 * math.pi)
             self.time_since_last_change = 0.0
-        
+
         # Smoothly transition to the new direction (linear interpolation)
         angle_diff = (self.target_direction - self.current_direction) % (2 * math.pi)
         if angle_diff > math.pi:
             angle_diff -= 2 * math.pi
-        
+
         # Adjust the current direction based on the angle difference, at a rate of 0.5 radians per second
         self.current_direction += angle_diff * min(dt, 0.25)
-        self.current_direction %= (2 * math.pi)
+        self.current_direction %= 2 * math.pi
 
     def get_direction(self) -> float:
         """Return the current gravity direction."""
@@ -147,19 +150,19 @@ def main():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
     running = True
-    
+
     # Generate 10,000 random textures
     textures = [create_sprite_from_name(f"item_{i}") for i in range(NUM_TEXTURES)]
-    
+
     # Generate 20,000 sprites, each with a random texture from the 10,000
     sprites = [Sprite(random.choice(textures)) for _ in range(NUM_SPRITES)]
 
     # Initialize the global gravity system
     gravity = Gravity(switch_interval=4.0)
-    
+
     while running:
         dt = clock.tick(FPS) / 1000.0  # Time passed per frame in seconds
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -167,18 +170,18 @@ def main():
         # Update the gravity direction
         gravity.update(dt)
         current_gravity_direction = gravity.get_direction()
-        
+
         screen.fill((30, 30, 30))  # Dark background
-        
+
         # Update and render all sprites
         for sprite in sprites:
             sprite.update(dt, current_gravity_direction)
             sprite.render(screen)
-        
+
         pygame.display.flip()
 
     pygame.quit()
 
+
 if __name__ == "__main__":
     main()
-

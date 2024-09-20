@@ -1,4 +1,5 @@
 from typing import Optional
+import random
 
 from cnegng.ACME.spatial2d.position import Position
 from cnegng.ACME.spatial2d.dimensions import Dimensions
@@ -99,6 +100,11 @@ class Area:
         calculatates the height of the area
         """
         return self.bottom - self.top
+
+    def random_position_inside(self):
+        x = random.uniform(0, self.width()) + self.left
+        y = random.uniform(0, self.height()) + self.top
+        return Position(x, y)
 
     def width(self):
         """
