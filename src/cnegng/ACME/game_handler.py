@@ -3,8 +3,8 @@ from typing import Tuple, Optional
 
 import pygame
 
-from cnegng.ACME import PyGameEventHandler
-from cnegng.ACME import TimedEventHandler
+from cnegng.ACME.events.pygame_event_handler import PyGameEventHandler
+from cnegng.ACME.events.timed_event_handler import TimedEventHandler
 
 
 class GameHandler:

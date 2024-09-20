@@ -1,6 +1,6 @@
 import pytest
 from typing import List
-from cnegng.ACME.timed_event_handler import TimedEventHandler
+from cnegng.ACME import TimedEventHandler
 
 
 @pytest.fixture
