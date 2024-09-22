@@ -1,5 +1,6 @@
 from typing import Optional
 import random
+import copy
 
 from cnegng.ACME.spatial2d.position import Position
 from cnegng.ACME.spatial2d.dimensions import Dimensions
@@ -43,6 +44,9 @@ class Area:
             self.bottom = bottom
             self.right = right
 
+    def clone(self):
+        return copy.deepcopy(self)
+
     def contains(self, position: Position) -> bool:
         """
         Checks if the given position is inside the area (inclusive).
@@ -85,33 +89,38 @@ class Area:
         :return: A callable that scales a Position.
         :rtype: Callable[[Position], Position]
         """
-        scale_x = (other.right - other.left) / (self.right - self.left)
-        scale_y = (other.bottom - other.top) / (self.bottom - self.top)
+        scale_x = other.width / self.width
+        scale_y = other.height / self.height
 
-        def scale(position: Position) -> Position:
+        def _scale(position: Position) -> Position:
             new_x = other.left + (position.x - self.left) * scale_x
             new_y = other.top + (position.y - self.top) * scale_y
             return Position(new_x, new_y)
 
-        return scale
+        return _scale
 
+    @property
     def height(self):
         """
-        calculatates the height of the area
+        calculates the height of the area
         """
         return self.bottom - self.top
+    
+    def get_dimensions(self):
+        return Dimensions(width=self.width, height = self.height)
 
     def random_position_inside(self):
         x = random.uniform(0, self.width()) + self.left
         y = random.uniform(0, self.height()) + self.top
         return Position(x, y)
-
+    
+    @property
     def width(self):
         """
-        calculatates the width of the area
+        calculates the width of the area
         """
         return self.right - self.left
-
+    
     def __truediv__(self, scalar: float) -> "Area":
         """
         Divides the area by a scalar value, scaling the boundaries accordingly.

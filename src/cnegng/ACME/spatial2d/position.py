@@ -1,5 +1,6 @@
 from typing import Tuple
 import random
+import copy
 
 
 class Position:
@@ -44,5 +45,8 @@ class Position:
         self.x = (self.x - area.left) % (area.right - area.left) + area.left
         self.y = (self.y - area.top) % (area.bottom - area.top) + area.top
 
+    def clone(self):
+        return copy.deepcopy(self)
+    
     def __repr__(self):
         return f"Position(x={self.x:.2f}, y={self.y:.2f})"

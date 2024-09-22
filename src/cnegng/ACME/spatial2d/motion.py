@@ -1,6 +1,7 @@
 from typing import Tuple
 import math
 import random
+import copy
 
 from cnegng.ACME.spatial2d.position import Position
 
@@ -16,6 +17,9 @@ class Motion:
     def __init__(self, direction: float = 0.0, speed: float = 1.0):
         self.direction = direction
         self.speed = speed
+
+    def clone(self):
+        return copy.deepcopy(self)
 
     def move(self, position: Position, dt: float = 1.0) -> None:
         """
@@ -34,6 +38,9 @@ class Motion:
         return self.speed * dt * math.sin(self.direction)
 
     def updater(self, dt: float = 1.0):
+        """
+        Creates a method to cache the results of the movement update calculation for application to multiple positions without having to redo the math.
+        """
         x = self.x(dt)
         y = self.y(dt)
 

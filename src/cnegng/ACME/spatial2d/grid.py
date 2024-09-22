@@ -1,8 +1,8 @@
 from cnegng.ACME.spatial2d.area import Area
-from cnegng.ACME.spatial2d.cell import Cell
+from cnegng.ACME.spatial2d.grid_cell import GridCell
 from cnegng.ACME.spatial2d.position import Position
 from cnegng.ACME.spatial2d.dimensions import Dimensions
-
+from cnegng.ACME.spatial2d.adapter import DimensionsToArea, AreaToPosition
 
 class Grid:
     """
@@ -10,33 +10,52 @@ class Grid:
 
     :param area: The area covered by the grid
     :param dimensions: The number of rows and columns (width, height)
+    :param cell_class: class to construct cells out of, defaults to GridCell
     """
 
-    def __init__(self, area: Area, dimensions: Dimensions):
-        self.area = area
-        self.columns = int(dimensions.width)
-        self.rows = int(dimensions.height)
-        self.cell_width = self.area.width() / self.columns
-        self.cell_height = self.area.width() / self.rows
-        self.cells = []
+    def __init__(self, area: Area, dimensions: Dimensions, cell_class=GridCell):
+        """Create a grid with an overall area and divide it into cells based on dimensions."""
+        self.area = area.clone()
+        self.dimensions = dimensions.clone()
+        self.global_to_local = self.area.scale_by(DimensionsToArea(self.dimensions))
+        self.local_to_global = DimensionsToArea(self.dimensions).scale_by(self.area)
+        cell_width = self.area.width // self.dimensions.width
+        cell_height = self.area.height // self.dimensions.height
+        self.cell_dimensions = Dimensions(width=cell_width, height=cell_height)
+        self.cell_class = cell_class
+        self.group_call_counts = {}  # Dictionary to track call counts for different groups
         self.orphaned_objects = []
-        self.current_group = (
-            0  # Keeps track of which group of cells we're checking this frame
-        )
-        for index in range(self.rows * self.columns):
-            self._create_cell_for(index)
+        self.cells = self._create_cells()
 
-    def _create_cell_for(self, index):
-        col = index % self.columns
-        row = index // self.columns
-        top = row * self.cell_height
-        left = col * self.cell_width
-        bottom = top + self.cell_height
-        right = left + self.cell_width
-        cell = Cell(area=Area(top, left, bottom, right))
-        self.cells.append(cell)
 
-    def cell_for(self, position: Position) -> Cell:
+    @property
+    def width(self):
+        return self.area.right - self.area.left
+
+    @property
+    def height(self):
+        return self.area.bottom - self.area.top
+
+    def _create_cells(self):
+        """Initialize the grid by dividing the area into cells based on dimensions."""
+        cells = []
+        
+        for row_index in range(self.dimensions.height):
+            for col_index in range(self.dimensions.width):
+                # Calculate the top-left corner for this cell
+                top = self.area.top + row_index * self.dimensions.height
+                left = self.area.left + col_index * self.dimensions.width
+
+                # Calculate the bottom-right corner for this cell
+                bottom = top + self.dimensions.height
+                right = left + self.dimensions.width
+
+                # Clone the area and create a new cell with the calculated area
+                cell_area = Area(top, left, bottom, right)
+                cells.append(self.cell_class(cell_area))
+        return cells
+
+    def cell_for(self, position: Position) -> GridCell:
         """
         Finds the cell corresponding to the given position.
 
@@ -46,10 +65,48 @@ class Grid:
         if not self.area.contains(position):
             raise ValueError("Position out of bounds")
 
-        col = int((position.x - self.area.left) / self.cell_width)
-        row = int((position.y - self.area.top) / self.cell_height)
-        index = row * self.columns + col
+        col = int((position.x - self.area.left) / self.cell_dimensions.width)
+        row = int((position.y - self.area.top) / self.cell_dimensions.height)
+        index = row * int(self.cell_dimensions.width) + col
         return self.cells[index]
+
+    def add_to_cell(self, position: Position, item):
+        """Add an item to the cell at the specified position."""
+        cell = self.cell_for(position)
+        cell.add(item)
+
+    def remove_from_cell(self, position: Position, item):
+        """Remove an item from the cell at the specified position."""
+        cell = self.cell_for(position)
+        cell.remove(item)
+
+    def get_cells_in_group(self, name: str, number_of_groups: int):
+        """Divide the cells into number_of_groups groups, and yield the cells that match 'this time'."""
+        if name not in self.group_call_counts:
+            self.group_call_counts[name] = 0  # Initialize the counter for this group name
+
+        counter = self.group_call_counts[name]
+        total_cells = len(self.cells) * len(self.cells[0])  # Total number of cells
+        group_size = total_cells // number_of_groups
+        group_index = counter % number_of_groups
+
+        # Increment the counter for the next call
+        self.group_call_counts[name] += 1
+
+        # Yield cells that are part of this group
+        for y in range(len(self.cells)):
+            for x in range(len(self.cells[0])):
+                # Determine the group for this cell based on its linear index
+                linear_index = y * len(self.cells[0]) + x
+                if linear_index // group_size == group_index:
+                    yield self.cells[y][x]
+
+    def __repr__(self):
+        return f"Grid(area={self.area}, dimensions={self.dimensions}, cell_class={self.cell_class.__name__})"
+    
+
+    
+
 
     def add_object_to_cell(self, obj):
         """Add an object to the specified cell."""
@@ -68,42 +125,20 @@ class Grid:
             self.add_object_to_cell(obj, obj.x, obj.y)
         self.orphaned_objects.clear()
 
-    def _cells_in_range(self, x_min, y_min, x_max, y_max):
-        """Yield all cells that overlap the given bounding box (x_min, y_min) to (x_max, y_max)."""
-        # Handle world wrapping
-        x_min = x_min % WORLD_SIZE
-        y_min = y_min % WORLD_SIZE
-        x_max = x_max % WORLD_SIZE
-        y_max = y_max % WORLD_SIZE
+    def cells_in_range(self, area: Area):
+        """Yield all cells that overlap the given area."""
+        for cell in self.cells:
+            if self.areas_overlap(cell.area, area):
+                yield cell
 
-        # Determine grid cell boundaries
-        col_start = int(x_min // CELL_WIDTH)
-        col_end = int(x_max // CELL_WIDTH)
-        row_start = int(y_min // CELL_HEIGHT)
-        row_end = int(y_max // CELL_HEIGHT)
-
-        for row in range(row_start, row_end + 1):
-            for col in range(col_start, col_end + 1):
-                yield self.cells[row % GRID_SIZE][col % GRID_SIZE]
-
-    def objects_in_radius(self, center_x, center_y, radius):
-        """Return an iterator over all objects within a certain radius of (center_x, center_y)."""
-        # Compute the bounding box that contains the circle
-        x_min = center_x - radius
-        y_min = center_y - radius
-        x_max = center_x + radius
-        y_max = center_y + radius
-
-        radius_squared = radius**2
-
-        for cell in self._cells_in_range(x_min, y_min, x_max, y_max):
-            for obj in cell.nearby_occupants():
-                # Check if the object is within the radius
-                dx = (obj.x - center_x) % WORLD_SIZE
-                dy = (obj.y - center_y) % WORLD_SIZE
-                distance_squared = dx * dx + dy * dy
-                if distance_squared <= radius_squared:
-                    yield obj
+    @staticmethod
+    def areas_overlap(area1: Area, area2: Area) -> bool:
+        """Check if two areas overlap."""
+        return not (area1.right <= area2.left or
+                    area1.left >= area2.right or
+                    area1.bottom <= area2.top or
+                    area1.top >= area2.bottom)
+   
 
     def check_group_for_escapes(self):
         """Check 1/8th of the grid cells for sprite escapes."""
@@ -122,7 +157,7 @@ class Grid:
 
     def all_objects(self):
         """Return an iterator that yields all objects in the grid."""
-        for row in self.cells:
-            for cell in row:
-                for obj in cell.nearby_occupants():
-                    yield obj
+        for cell in self.cells:
+            for member in cell.members(): # I member
+                yield member
+

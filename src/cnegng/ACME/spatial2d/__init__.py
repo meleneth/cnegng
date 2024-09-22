@@ -4,5 +4,6 @@ from cnegng.ACME.spatial2d.grid import Grid
 from cnegng.ACME.spatial2d.cell import Cell
 from cnegng.ACME.spatial2d.position import Position
 from cnegng.ACME.spatial2d.motion import Motion
+from cnegng.ACME.spatial2d.circle import Circle
 
-__all__ = ["Area", "Cell", "Dimensions", "Grid", "Position", "Motion"]
+__all__ = ["Area", "Cell", "Dimensions", "Grid", "Position", "Motion", "Circle"]
