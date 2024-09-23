@@ -43,6 +43,11 @@ class Area:
             self.left = left
             self.bottom = bottom
             self.right = right
+        if self.top >= self.bottom:
+            raise ValueError(f"Invalid Area: 'top' ({self.top}) must be less than 'bottom' ({self.bottom})")
+        if self.left >= self.right:
+            raise ValueError(f"Invalid Area: 'left' ({self.left}) must be less than 'right' ({self.right})")
+
 
     def clone(self):
         return copy.deepcopy(self)
@@ -58,6 +63,9 @@ class Area:
             self.left <= position.x <= self.right
             and self.top <= position.y <= self.bottom
         )
+
+    def is_in_area(self, other: "Area") -> bool:
+        return self.overlap(other) is not None
 
     def overlap(self, other: "Area") -> "Optional[Area]":
         """
@@ -110,8 +118,8 @@ class Area:
         return Dimensions(width=self.width, height = self.height)
 
     def random_position_inside(self):
-        x = random.uniform(0, self.width()) + self.left
-        y = random.uniform(0, self.height()) + self.top
+        x = random.uniform(0, self.width) + self.left
+        y = random.uniform(0, self.height) + self.top
         return Position(x, y)
     
     @property
@@ -121,6 +129,9 @@ class Area:
         """
         return self.right - self.left
     
+    def __repr__(self):
+        return f"Area(top={self.top}, left={self.left}, bottom={self.bottom}, right={self.right})"
+
     def __truediv__(self, scalar: float) -> "Area":
         """
         Divides the area by a scalar value, scaling the boundaries accordingly.

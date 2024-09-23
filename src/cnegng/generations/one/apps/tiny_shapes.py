@@ -1,6 +1,8 @@
 import random
 
+from cnegng.ACME.spatial2d import Grid
 from cnegng.ACME.spatial2d import Area
+from cnegng.ACME.spatial2d import Circle
 from cnegng.ACME.spatial2d import Dimensions
 from cnegng.ACME.spatial2d import Position
 from cnegng.ACME.spatial2d import Motion
@@ -18,6 +20,7 @@ SHAPE_SIZE = 24  # Size of each sprite
 NUM_SPRITES = 20_000  # Total number of sprites to render
 NUM_TEXTURES = 10_000  # Number of pre-generated textures
 GRAVITY_FORCE = 5000
+GRID_CELLS = 20
 
 
 class TinyShape(GameHandler):
@@ -25,11 +28,12 @@ class TinyShape(GameHandler):
         super().__init__(screen_size=(SCREEN_WIDTH, SCREEN_HEIGHT))
         self.target_direction = Motion()
         self.current_direction = Motion(speed=GRAVITY_FORCE)
-        self.change_global_motion()
         self.area = Area(
             position=Position(0, 0),
             dimensions=Dimensions(COORDINATE_SPACE, COORDINATE_SPACE),
         )
+        self.area_to_screen = self.area.scale_by(Area(top = 0, left = 0, bottom = SCREEN_HEIGHT, right = SCREEN_WIDTH))
+        self.grid = Grid(self.area, dimensions=Dimensions(GRID_CELLS, GRID_CELLS))
         shape_texture = ShapeTexture(palette=vibrant(), shape_size=SHAPE_SIZE)
         textures = [
             shape_texture.create_sprite_from_name(f"item_{i}")
@@ -37,34 +41,47 @@ class TinyShape(GameHandler):
         ]
 
         # Generate 20,000 sprites, each with a random texture from the 10,000
-        self.sprites = [
-            Sprite(
-                position=self.area.random_position_inside(),
-                texture=random.choice(textures),
-            )
-            for _ in range(NUM_SPRITES)
-        ]
-        # self.grid = Grid(area=Area(), dimensions=Dimensions())
-        # skip grid, it makes things hard
+        for _ in range(NUM_SPRITES):
+            sprite =                 Sprite(
+                    position=self.area.random_position_inside(),
+                    texture=random.choice(textures),
+                    
+                )
 
+            self.grid.add_to_cell(position = sprite.position, item = sprite)
+
+        self.change_global_motion()
+        self.apply_extra_gravity()
+
+        
     def change_global_motion(self):
         self.target_direction.randomize()
         self.timed_event_handler.add_event(4.0, self.change_global_motion)
 
+    def apply_extra_gravity(self):
+        down = Motion(direction = 0, speed = 100_000)
+        updater = down.updater()
+        #circle = Circle(center=Position(COORDINATE_SPACE/2, COORDINATE_SPACE/2), radius = 200_000)
+        #for chosen_one in self.grid.objects_in_circle(circle):
+        area = Area(top = 500_000, left = 500_000, right = 600_000, bottom = 600_000)
+        for chosen_one in self.grid.objects_in_area(area):
+            assert False
+            chosen_one.cell.remove_object(chosen_one)
+        #    chosen_one.position = updater(chosen_one.position)
+        self.timed_event_handler.add_event(0.1, self.apply_extra_gravity)
+
     def update(self, dt: float) -> None:
         self.current_direction.lerp(self.target_direction, dt)
         global_motion_updater = self.current_direction.updater(dt)
-        for sprite in self.sprites:
-            global_motion_updater(sprite.position)
-            sprite.motion.move(sprite.position, self.dt)
+        for sprite in self.grid.all_objects():
+            sprite.position = global_motion_updater(sprite.position)
+            sprite.position = sprite.motion.move(sprite.position, dt)
 
     def render(self) -> None:
-        for sprite in self.sprites:
+        for sprite in self.grid.all_objects():
             # what happened to tell, don't ask?
-            # also, since SCALE is only width, this is clearly wrong
-            screen_x = int(sprite.position.x * SCALE)
-            screen_y = int(sprite.position.y * SCALE)
-            self.surface.blit(sprite.texture, (screen_x, screen_y))
+            position = self.area_to_screen(sprite.position)
+            self.surface.blit(sprite.texture, (position.x, position.y))
 
 
 def main():

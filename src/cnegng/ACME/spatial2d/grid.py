@@ -1,4 +1,5 @@
 from cnegng.ACME.spatial2d.area import Area
+from cnegng.ACME.spatial2d.circle import Circle
 from cnegng.ACME.spatial2d.grid_cell import GridCell
 from cnegng.ACME.spatial2d.position import Position
 from cnegng.ACME.spatial2d.dimensions import Dimensions
@@ -64,10 +65,9 @@ class Grid:
         """
         if not self.area.contains(position):
             raise ValueError("Position out of bounds")
-
-        col = int((position.x - self.area.left) / self.cell_dimensions.width)
-        row = int((position.y - self.area.top) / self.cell_dimensions.height)
-        index = row * int(self.cell_dimensions.width) + col
+        x_index = int(position.x // self.cell_dimensions.width)
+        y_index = int(position.y // self.cell_dimensions.height)
+        index = y_index * int(self.dimensions.width) + x_index
         return self.cells[index]
 
     def add_to_cell(self, position: Position, item):
@@ -105,19 +105,6 @@ class Grid:
         return f"Grid(area={self.area}, dimensions={self.dimensions}, cell_class={self.cell_class.__name__})"
     
 
-    
-
-
-    def add_object_to_cell(self, obj):
-        """Add an object to the specified cell."""
-        cell = self.get_cell(position=obj.position)
-        obj.current_cell = cell
-        cell.add_object(obj)
-
-    def remove_object_from_cell(self, obj):
-        """Remove an object from its current cell."""
-        if obj.current_cell is not None:
-            obj.current_cell.remove_object(obj)
 
     def update_orphaned_objects(self):
         """Re-add orphaned objects to their correct cells after position updates."""
@@ -154,10 +141,41 @@ class Grid:
 
         # Move to the next group of cells for the next frame
         self.current_group = (self.current_group + 1) % 8
-
-    def all_objects(self):
+    
+    def cells_in_range(self, area: Area):
+        """Yield all cells that overlap the given area."""
+        for row in self.cells:
+            for cell in row:
+                if self.areas_overlap(cell.area, area):
+                    yield cell
+    
+    def all_objects(self, layer='default'):
         """Return an iterator that yields all objects in the grid."""
         for cell in self.cells:
-            for member in cell.members(): # I member
-                yield member
+            # I member
+            yield from cell.members(layer=layer)
 
+    def objects_in_area(self, area: Area, layer='default'):
+        """Yield all objects in the grid that are within the area."""
+        for cell in self.cells_in_range(area=area):
+            yield from cell.objects_in_area(area, layer=layer)
+
+    def objects_in_circle(self, circle: Circle, layer='default'):
+        """Yield all objects in the grid that are within the circle's radius."""
+        for cell in self.cells:
+            if cell.is_in_circle(circle):
+                yield from cell.objects_in_radius(circle, layer=layer)
+
+    def cells_in_range(self, area: Area):
+        """Yield cells that overlap with the given area by calculating the affected indices directly."""
+        # Calculate the row and column indices that correspond to the area
+        start_col = max(0, (area.left - self.area.left) // self.dimensions.width)
+        end_col = min(len(self.cells) - 1, (area.right - self.area.left) // self.dimensions.width)
+
+        start_row = max(0, (area.top - self.area.top) // self.dimensions.height)
+        end_row = min(len(self.cells) - 1, (area.bottom - self.area.top) // self.dimensions.height)
+
+        # Yield cells directly based on the calculated indices
+        for row_index in range(start_row, end_row + 1):
+            for col_index in range(start_col, end_col + 1):
+                yield self.cells[(row_index * int(self.dimensions.width)) + col_index]

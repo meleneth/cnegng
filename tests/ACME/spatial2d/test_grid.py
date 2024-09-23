@@ -35,3 +35,27 @@ class TestGrid:
         non_overlapping_area = Area(150, 150, 160, 160)
         cells = list(grid.cells_in_range(non_overlapping_area))
         assert len(cells) == 0
+
+    def test_cells_in_range(self, grid):
+        """Test that Grid yields the correct cells for the given area."""
+        search_area = Area(20, 20, 50, 50)
+        cells = list(grid.cells_in_range(search_area))
+
+        # Check that the correct number of cells is returned
+        assert len(cells) == 9  # 3x3 grid of cells
+
+    def test_single_cell_in_range(self, grid):
+        """Test that Grid correctly yields a single cell."""
+        search_area = Area(15, 15, 25, 25)
+        cells = list(grid.cells_in_range(search_area))
+
+        # Only one cell should overlap
+        assert len(cells) == 1
+
+    def test_no_cells_in_range(self, grid):
+        """Test that no cells are yielded when the area is out of bounds."""
+        search_area = Area(150, 150, 200, 200)
+        cells = list(grid.cells_in_range(search_area))
+
+        # There should be no cells overlapping
+        assert len(cells) == 0

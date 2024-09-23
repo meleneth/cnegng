@@ -24,12 +24,12 @@ class Motion:
     def move(self, position: Position, dt: float = 1.0) -> None:
         """
         Moves the position according to the vector's direction and speed, scaled by the time delta.
+        Returns a new position, which makes this method itself non destructive
 
         :param position: The position to move
         :param dt: The time delta (default is 1.0)
         """
-        position.x += self.speed * dt * math.cos(self.direction)
-        position.y += self.speed * dt * math.sin(self.direction)
+        return Position(x=position.x + self.speed * dt * math.cos(self.direction), y= position.y + self.speed * dt * math.sin(self.direction))
 
     def x(self, dt: float = 1.0):
         return self.speed * dt * math.cos(self.direction)
@@ -45,8 +45,8 @@ class Motion:
         y = self.y(dt)
 
         def apply(position: Position):
-            position.x += x
-            position.y += y
+            new_position = Position(position.x + x, position.y + y)
+            return new_position
 
         return apply
 
@@ -72,3 +72,6 @@ class Motion:
         # Adjust the current direction based on the angle difference, at a rate of 0.5 radians per second
         self.direction += angle_diff * min(dt, 0.25)
         self.direction %= 2 * math.pi
+
+    def __repr__(self):
+        return f"Motion(direction={self.direction}, speed={self.speed})"
