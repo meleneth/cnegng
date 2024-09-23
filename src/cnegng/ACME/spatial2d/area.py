@@ -82,7 +82,7 @@ class Area:
         overlap_right = min(self.right, other.right)
 
         if overlap_top < overlap_bottom and overlap_left < overlap_right:
-            return Area(overlap_top, overlap_left, overlap_bottom, overlap_right)
+            return Area(top=overlap_top, left=overlap_left, bottom=overlap_bottom, right=overlap_right)
         else:
             return None
 
@@ -106,6 +106,22 @@ class Area:
             return Position(new_x, new_y)
 
         return _scale
+    
+    @property
+    def position(self):
+        return Position(x = self.left, y = self.top)
+    
+    @property
+    def top_left(self):
+        return self.position()
+    
+    @property
+    def bottom_right(self):
+        return Position(x = self.right, y = self.bottom)
+
+    @property
+    def dimensions(self):
+        return Dimensions(width=self.width, height=self.height)
 
     @property
     def height(self):
@@ -130,7 +146,7 @@ class Area:
         return self.right - self.left
     
     def __repr__(self):
-        return f"Area(top={self.top}, left={self.left}, bottom={self.bottom}, right={self.right})"
+        return f"Area({self.width}x{self.height}@{self.top},{self.left})"
 
     def __truediv__(self, scalar: float) -> "Area":
         """

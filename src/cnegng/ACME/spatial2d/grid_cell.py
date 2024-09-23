@@ -13,28 +13,31 @@ class SanityError(Exception):
 class ItemNotFound(Exception):
     pass
 class GridCell:
-    def __init__(self, area: Area):
+    def __init__(self, area: Area, cell_index: int):
         """Each cell knows its area and stores its contents as a dictionary."""
         self.area = area
-        self.contents = defaultdict(dict)
+        self.contents = defaultdict(lambda: defaultdict(bool))
+        self.cell_index = cell_index
 
-    def add(self, item, label: str = "default"):
+    def add(self, item, layer: str = "default"):
         """Add an item to the cell's contents"""
         if item.current_cell is not None:
             raise AlreadyInACell()
         item.current_cell = self
-        self.contents[label][item] = True
-        
+        self.contents[layer][item] = True
+    
+    def __repr__(self):
+        return f"GridCell(cell_index={self.cell_index}, area={self.area})"
 
-    def remove(self, item, label: str = "default"):
-        """Remove an item from the cell's contents"""
-        for name, value in enumerate(self.contents):
-            if item in value:
-                if item.current_cell is not self:
-                    raise SanityError()
-                del value[item]
-                item.current_cell = None
-                return
+    def remove(self, obj, layer='default'):
+        """Remove an object from a specific layer."""
+        if obj in self.contents[layer]:
+            obj.current_cell = None
+            del self.contents[layer][obj]
+            # Clean up the layer if it's empty
+            if not self.contents[layer]:
+                del self.contents[layer]
+            return
         raise ItemNotFound()
 
     def members(self, layer: str = "default"):
@@ -62,5 +65,8 @@ class GridCell:
                 if distance_to_center <= circle.radius:
                     yield obj
 
-    def __repr__(self):
-        return f"GridCell({self.area}, contents={self.contents})"
+    def objects_in_area(self, area: Area, layer: str = "default"):
+        obj_key = list(self.contents[layer].keys())
+        for member in obj_key:
+            if area.contains(member.position):
+                yield member

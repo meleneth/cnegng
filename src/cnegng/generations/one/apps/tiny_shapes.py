@@ -65,8 +65,7 @@ class TinyShape(GameHandler):
         #for chosen_one in self.grid.objects_in_circle(circle):
         area = Area(top = 500_000, left = 500_000, right = 600_000, bottom = 600_000)
         for chosen_one in self.grid.objects_in_area(area):
-            assert False
-            chosen_one.cell.remove_object(chosen_one)
+            chosen_one.current_cell.remove(chosen_one)
         #    chosen_one.position = updater(chosen_one.position)
         self.timed_event_handler.add_event(0.1, self.apply_extra_gravity)
 

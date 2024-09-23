@@ -4,6 +4,10 @@ from cnegng.ACME.spatial2d.grid_cell import GridCell
 from cnegng.ACME.spatial2d.position import Position
 from cnegng.ACME.spatial2d.dimensions import Dimensions
 from cnegng.ACME.spatial2d.adapter import DimensionsToArea, AreaToPosition
+from cnegng.ACME.spatial2d.coordinates import GlobalCoord, GridCoord
+
+class PositionOutsideGrid(Exception):
+    pass
 
 class Grid:
     """
@@ -20,9 +24,9 @@ class Grid:
         self.dimensions = dimensions.clone()
         self.global_to_local = self.area.scale_by(DimensionsToArea(self.dimensions))
         self.local_to_global = DimensionsToArea(self.dimensions).scale_by(self.area)
-        cell_width = self.area.width // self.dimensions.width
-        cell_height = self.area.height // self.dimensions.height
-        self.cell_dimensions = Dimensions(width=cell_width, height=cell_height)
+        self.cell_width = int(self.area.width) // int(self.dimensions.width)
+        self.cell_height = int(self.area.height) // int(self.dimensions.height)
+        self.cell_dimensions = Dimensions(width=self.cell_width, height=self.cell_height)
         self.cell_class = cell_class
         self.group_call_counts = {}  # Dictionary to track call counts for different groups
         self.orphaned_objects = []
@@ -40,7 +44,7 @@ class Grid:
     def _create_cells(self):
         """Initialize the grid by dividing the area into cells based on dimensions."""
         cells = []
-        
+        cell_index = 0
         for row_index in range(self.dimensions.height):
             for col_index in range(self.dimensions.width):
                 # Calculate the top-left corner for this cell
@@ -53,20 +57,21 @@ class Grid:
 
                 # Clone the area and create a new cell with the calculated area
                 cell_area = Area(top, left, bottom, right)
-                cells.append(self.cell_class(cell_area))
+                cells.append(self.cell_class(cell_area, cell_index))
+                cell_index += 1
         return cells
 
-    def cell_for(self, position: Position) -> GridCell:
+    def cell_for(self, global_coord: GlobalCoord) -> GridCell:
         """
         Finds the cell corresponding to the given position.
 
-        :param position: The position to find the cell for
+        :param global_coord: The position to find the cell for
         :return: The corresponding cell object
         """
-        if not self.area.contains(position):
+        if not self.area.contains(global_coord):
             raise ValueError("Position out of bounds")
-        x_index = int(position.x // self.cell_dimensions.width)
-        y_index = int(position.y // self.cell_dimensions.height)
+        x_index = int(global_coord.x // self.cell_dimensions.width)
+        y_index = int(global_coord.y // self.cell_dimensions.height)
         index = y_index * int(self.dimensions.width) + x_index
         return self.cells[index]
 
@@ -166,16 +171,37 @@ class Grid:
             if cell.is_in_circle(circle):
                 yield from cell.objects_in_radius(circle, layer=layer)
 
+    def flat_index(self, row: int, col: int):
+        """Convert a (row, col) pair to a flat index in the flat list of cells."""
+        return row * self.dimensions.width + col
+
     def cells_in_range(self, area: Area):
-        """Yield cells that overlap with the given area by calculating the affected indices directly."""
-        # Calculate the row and column indices that correspond to the area
-        start_col = max(0, (area.left - self.area.left) // self.dimensions.width)
-        end_col = min(len(self.cells) - 1, (area.right - self.area.left) // self.dimensions.width)
+        """Yield cells that overlap with the given global Area using flat index."""
+        start_global = GlobalCoord(area.left, area.top)
+        end_global = GlobalCoord(area.right, area.bottom)
 
-        start_row = max(0, (area.top - self.area.top) // self.dimensions.height)
-        end_row = min(len(self.cells) - 1, (area.bottom - self.area.top) // self.dimensions.height)
+        start_grid = self.to_grid_coord(start_global)
+        end_grid = self.to_grid_coord(end_global)
 
-        # Yield cells directly based on the calculated indices
-        for row_index in range(start_row, end_row + 1):
-            for col_index in range(start_col, end_col + 1):
-                yield self.cells[(row_index * int(self.dimensions.width)) + col_index]
+        for row in range(start_grid.y, end_grid.y + 1):
+            for col in range(start_grid.x, end_grid.x + 1):
+                if 0 <= row < self.dimensions.height and 0 <= col < self.dimensions.width:
+                    flat_idx = self.flat_index(row, col)
+                    yield self.cells[flat_idx]
+        
+    def to_grid_coord(self, position: "Position") -> "GridCoord":
+        """Convert global coordinates to grid-local coordinates."""
+        # Ensure the position is within the bounds of the grid area
+        if not self.area.contains(position):
+            raise PositionOutsideGrid()
+        #    raise ValueError(f"Position {position} is out of bounds of the grid area {self.area}")
+
+        # Translate the global coordinates to local grid coordinates
+        x_local = int((position.x - self.area.left) // self.cell_width)
+        y_local = int((position.y - self.area.top) // self.cell_height)
+
+        # Ensure the coordinates stay within bounds of the grid
+        if x_local < 0 or x_local >= self.dimensions.width or y_local < 0 or y_local >= self.dimensions.height:
+            raise ValueError(f"Converted grid coordinates ({x_local}, {y_local}) are out of bounds")
+
+        return GridCoord(x=x_local, y=y_local, grid=self)
