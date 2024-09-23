@@ -1,4 +1,5 @@
 import heapq
+import itertools
 from typing import Callable, List, Tuple
 
 
@@ -10,10 +11,12 @@ class TimedEventHandler:
 
     Attributes
     ----------
-    _events : List[Tuple[float, Callable[[], None]]]
+    _events : List[Tuple[float, int, Callable[[], None]]]
         A heap storing events with their absolute expiration time and associated callbacks.
     _current_time : float
         Internal clock to manage virtual time.
+    _counter : 
+        ever increasing value so heap doesn't try to compare callables to determine sort order
     """
 
     def __init__(self) -> None:
@@ -21,8 +24,9 @@ class TimedEventHandler:
         Initializes the TimedEventHandler with an empty event list and sets the
         internal clock to 0.
         """
-        self._events: List[Tuple[float, Callable[[], None]]] = []
+        self._events: List[Tuple[float, int, Callable[[], None]]] = []
         self._current_time: float = 0.0  # Internal clock to manage virtual time
+        self._counter = itertools.count()
 
     def add_event(
         self, time_until_trigger: float, callback: Callable[[], None]
@@ -38,7 +42,8 @@ class TimedEventHandler:
             A callable that will be invoked when the event is triggered.
         """
         expiration_time = self._current_time + time_until_trigger
-        heapq.heappush(self._events, (expiration_time, callback))
+        count = next(self._counter)
+        heapq.heappush(self._events, (expiration_time, count, callback))
 
     def apply(self, dt: float) -> None:
         """
@@ -54,7 +59,7 @@ class TimedEventHandler:
 
         # Process events that have expired
         while self._events and self._events[0][0] <= self._current_time:
-            expiration_time, callback = heapq.heappop(self._events)
+            expiration_time, _, callback = heapq.heappop(self._events)
             if expiration_time <= self._current_time:
                 # Trigger the event
                 callback()
