@@ -44,10 +44,13 @@ class Area:
             self.bottom = bottom
             self.right = right
         if self.top >= self.bottom:
-            raise ValueError(f"Invalid Area: 'top' ({self.top}) must be less than 'bottom' ({self.bottom})")
+            raise ValueError(
+                f"Invalid Area: 'top' ({self.top}) must be less than 'bottom' ({self.bottom})"
+            )
         if self.left >= self.right:
-            raise ValueError(f"Invalid Area: 'left' ({self.left}) must be less than 'right' ({self.right})")
-
+            raise ValueError(
+                f"Invalid Area: 'left' ({self.left}) must be less than 'right' ({self.right})"
+            )
 
     def clone(self):
         return copy.deepcopy(self)
@@ -82,7 +85,12 @@ class Area:
         overlap_right = min(self.right, other.right)
 
         if overlap_top < overlap_bottom and overlap_left < overlap_right:
-            return Area(top=overlap_top, left=overlap_left, bottom=overlap_bottom, right=overlap_right)
+            return Area(
+                top=overlap_top,
+                left=overlap_left,
+                bottom=overlap_bottom,
+                right=overlap_right,
+            )
         else:
             return None
 
@@ -106,18 +114,43 @@ class Area:
             return Position(new_x, new_y)
 
         return _scale
-    
+
+    def overlaps_with_area(self, other_area):
+        # Check if one area is completely to the left, right, above, or below the other area
+        return not (
+            self.right < other_area.left  # Area is to the left
+            or self.left > other_area.right  # Area is to the right
+            or self.bottom < other_area.top  # Area is above
+            or self.top > other_area.bottom
+        )  # Area is below
+
+    def overlaps_with_circle(self, circle):
+        # Circle center and radius
+        cx, cy = circle.center.x, circle.center.y
+        radius = circle.radius
+
+        # Find the closest point on the rectangle to the circle's center
+        closest_x = max(self.left, min(cx, self.right))
+        closest_y = max(self.top, min(cy, self.bottom))
+
+        # Calculate the distance between the circle's center and this closest point
+        distance_x = cx - closest_x
+        distance_y = cy - closest_y
+
+        # If the distance is less than the circle's radius, they overlap
+        return (distance_x**2 + distance_y**2) <= (radius**2)
+
     @property
     def position(self):
-        return Position(x = self.left, y = self.top)
-    
+        return Position(x=self.left, y=self.top)
+
     @property
     def top_left(self):
         return self.position()
-    
+
     @property
     def bottom_right(self):
-        return Position(x = self.right, y = self.bottom)
+        return Position(x=self.right, y=self.bottom)
 
     @property
     def dimensions(self):
@@ -129,22 +162,22 @@ class Area:
         calculates the height of the area
         """
         return self.bottom - self.top
-    
+
     def get_dimensions(self):
-        return Dimensions(width=self.width, height = self.height)
+        return Dimensions(width=self.width, height=self.height)
 
     def random_position_inside(self):
         x = random.uniform(0, self.width) + self.left
         y = random.uniform(0, self.height) + self.top
         return Position(x, y)
-    
+
     @property
     def width(self):
         """
         calculates the width of the area
         """
         return self.right - self.left
-    
+
     def __repr__(self):
         return f"Area({self.width}x{self.height}@{self.top},{self.left})"
 
