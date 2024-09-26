@@ -1,5 +1,6 @@
 import random
 
+from cnegng.ACME.spatial2d.grid import GridSize
 from cnegng.ACME.spatial2d import Grid
 from cnegng.ACME.spatial2d import Area
 from cnegng.ACME.spatial2d import Circle
@@ -32,8 +33,10 @@ class TinyShape(GameHandler):
             position=Position(0, 0),
             dimensions=Dimensions(COORDINATE_SPACE, COORDINATE_SPACE),
         )
-        self.area_to_screen = self.area.scale_by(Area(top = 0, left = 0, bottom = SCREEN_HEIGHT, right = SCREEN_WIDTH))
-        self.grid = Grid(self.area, dimensions=Dimensions(GRID_CELLS, GRID_CELLS))
+        self.area_to_screen = self.area.scale_by(
+            Area(top=0, left=0, bottom=SCREEN_HEIGHT, right=SCREEN_WIDTH)
+        )
+        self.grid = Grid(self.area, grid_size=GridSize(GRID_CELLS, GRID_CELLS))
         shape_texture = ShapeTexture(palette=vibrant(), shape_size=SHAPE_SIZE)
         textures = [
             shape_texture.create_sprite_from_name(f"item_{i}")
@@ -42,30 +45,33 @@ class TinyShape(GameHandler):
 
         # Generate 20,000 sprites, each with a random texture from the 10,000
         for _ in range(NUM_SPRITES):
-            sprite =                 Sprite(
-                    position=self.area.random_position_inside(),
-                    texture=random.choice(textures),
-                    
-                )
+            sprite = Sprite(
+                position=self.area.random_position_inside(),
+                texture=random.choice(textures),
+            )
 
-            self.grid.add_to_cell(position = sprite.position, item = sprite)
+            self.grid.add_to_cell(obj=sprite, coords=sprite.position)
 
         self.change_global_motion()
         self.apply_extra_gravity()
 
-        
     def change_global_motion(self):
         self.target_direction.randomize()
         self.timed_event_handler.add_event(4.0, self.change_global_motion)
 
     def apply_extra_gravity(self):
-        down = Motion(direction = 0, speed = 100_000)
+        down = Motion(direction=0, speed=100_000)
         updater = down.updater()
-        #circle = Circle(center=Position(COORDINATE_SPACE/2, COORDINATE_SPACE/2), radius = 200_000)
-        #for chosen_one in self.grid.objects_in_circle(circle):
-        area = Area(top = 500_000, left = 500_000, right = 600_000, bottom = 600_000)
-        for chosen_one in self.grid.objects_in_area(area):
-            chosen_one.current_cell.remove(chosen_one)
+        circle = Circle(
+            center=Position(COORDINATE_SPACE / 2, COORDINATE_SPACE / 2), radius=200_000
+        )
+        for chosen_one in self.grid.objects_in_circle(circle):
+            # DEMETER SAYS HWHAT
+            chosen_one.owning_cell.remove(chosen_one)
+
+        area = Area(top=500_000, left=500_000, right=600_000, bottom=600_000)
+        # for chosen_one in self.grid.objects_in_area(area):
+        #    chosen_one.current_cell.remove(chosen_one)
         #    chosen_one.position = updater(chosen_one.position)
         self.timed_event_handler.add_event(0.1, self.apply_extra_gravity)
 

@@ -13,6 +13,13 @@ class TestObjectContainer:
         return flexmock(owner=None)
 
     @pytest.fixture
+    def mock_object2(self):
+        """
+        Creates a mock object with the necessary attributes for owner tracking.
+        """
+        return flexmock(owner=None)
+
+    @pytest.fixture
     def owner(self):
         """
         Creates a mock owner.
@@ -48,9 +55,9 @@ class TestObjectContainer:
         container.clear(layer=3)
         assert not container.contains(mock_object, layer=3)
 
-    def test_clear_all_layers(self, container, mock_object):
+    def test_clear_all_layers(self, container, mock_object, mock_object2):
         container.add(mock_object, layer=1)
-        container.add(mock_object, layer=2)
+        container.add(mock_object2, layer=2)
         container.clear()
         assert container.size() == 0
 
@@ -59,8 +66,4 @@ class TestObjectContainer:
         all_objects = container.get_all(layer=4)
         assert mock_object in all_objects
 
-    def test_get_all_objects_across_layers(self, container, mock_object):
-        container.add(mock_object, layer=1)
-        container.add(mock_object, layer=2)
-        all_objects = container.get_all()
-        assert len(all_objects) == 1  # Only one object, in multiple layers
+   

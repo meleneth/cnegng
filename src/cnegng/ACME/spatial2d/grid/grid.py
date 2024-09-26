@@ -105,6 +105,9 @@ class Grid:
             self
         )  # Delegate collision queries to CollisionQuery
 
+    def __repr__(self):
+        return f"Grid(area={self.area}, grid_size={self.grid_size})"
+
     def _area_for_cell(self, grid_coord):
         """
         Calculate the area covered by the cell at the given grid coordinates.
@@ -164,6 +167,16 @@ class Grid:
         y = int(global_coords.y / (self.area.height / self.grid_size.height))
         return GridCoord(grid=self, x=x, y=y)
 
+    def all_objects(self, layer=None):
+        if layer is None:
+            for row in self.cells:
+                for cell in row:
+                    yield from cell.all_members()
+        else:
+            for row in self.cells:
+                for cell in row:
+                    yield from cell.all_members(layer=layer)
+
     def cells_in_area(self, area):
         """
         Yields all GridCells that overlap with the given Area.
@@ -195,24 +208,28 @@ class Grid:
         # Calculate the bounding box of the circle
         min_x = max(0, int((circle.center.x - circle.radius) // self.cell_width))
         max_x = min(
-            self.grid_dimensions.width,
+            self.grid_size.width,
             int((circle.center.x + circle.radius) // self.cell_width),
         )
         min_y = max(0, int((circle.center.y - circle.radius) // self.cell_height))
         max_y = min(
-            self.grid_dimensions.height,
+            self.grid_size.height,
             int((circle.center.y + circle.radius) // self.cell_height),
         )
 
         # Iterate over the cells within the bounding box
-        for y in range(min_y, max_y + 1):
-            for x in range(min_x, max_x + 1):
-                grid_coord = GridCoord(x, y)
+        for y in range(min_y, max_y):
+            for x in range(min_x, max_x):
+                grid_coord = GridCoord(grid=self, x=x, y=y)
                 cell_area = self._area_for_cell(grid_coord)
 
                 # Check if the cell overlaps with the circle
                 if cell_area.overlaps_with_circle(circle):
                     yield self.cells[y][x]
+
+    def objects_in_circle(self, circle : Circle, layer="default"):
+        for cell in self.cells_in_circle(circle):
+            yield from cell.objects_in_circle(circle, layer)
 
 
 class GridCell:
@@ -232,16 +249,21 @@ class GridCell:
         """Check if the GridCell overlaps with another Area."""
         return self.area.overlaps_with_area(area)
 
-    def objects_in_circle(self, circle: "Circle"):
+    def objects_in_circle(self, circle: "Circle", layer="default"):
         """Yield members within the circle."""
-        for layer in self.object_container.values():
-            for obj in self.object_container.get_all(layer):
-                if circle.contains_position(obj.position):
-                    yield obj
+        for obj in self.object_container.get_all(layer):
+            if circle.contains_position(obj.position):
+                yield obj
 
     def add_to_cell(self, object, layer="default"):
         self.object_container.add(object, layer=layer)
 
+    def remove(self, object, layer="default"):
+        self.object_container.remove(object, layer=layer)
+
+    def all_members(self, layer=None):
+        return self.object_container.get_all(layer=layer)
+      
     def members_in_area(self, area: "Area"):
         """Yield members within the area."""
         for layer in self.contents:

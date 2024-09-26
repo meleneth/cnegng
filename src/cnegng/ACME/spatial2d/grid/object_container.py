@@ -100,3 +100,6 @@ class ObjectContainer:
         for objects in self._layers.values():
             all_objects.update(objects)
         return all_objects
+
+    def layers(self):
+        return self._layers.keys()
