@@ -8,7 +8,7 @@ from cnegng.ACME.spatial2d import Dimensions
 from cnegng.ACME.spatial2d import Position
 from cnegng.ACME.spatial2d import Motion
 from cnegng.ACME import GameHandler
-from cnegng.generations.one.palette import vibrant
+from cnegng.generations.one.palette import vibrant, without_red
 from cnegng.generations.one import ShapeTexture
 from cnegng.generations.one import Sprite
 
@@ -38,16 +38,21 @@ class TinyShape(GameHandler):
         )
         self.grid = Grid(self.area, grid_size=GridSize(GRID_CELLS, GRID_CELLS))
         shape_texture = ShapeTexture(palette=vibrant(), shape_size=SHAPE_SIZE)
-        textures = [
-            shape_texture.create_sprite_from_name(f"item_{i}")
+        self.selected_shape_texture = ShapeTexture(palette=without_red(vibrant()), shape_size=SHAPE_SIZE)
+        self.textures = {
+            f"item_{i}": shape_texture.create_sprite_from_name(f"item_{i}")
             for i in range(NUM_TEXTURES)
-        ]
+        }
+        self.selected_textures = {}
+        self.selected_objects = set()
 
         # Generate 20,000 sprites, each with a random texture from the 10,000
         for _ in range(NUM_SPRITES):
+            texture_name = random.choice(list(self.textures.keys()))
             sprite = Sprite(
+                name=texture_name,
                 position=self.area.random_position_inside(),
-                texture=random.choice(textures),
+                texture=self.textures[texture_name],
             )
 
             self.grid.add_to_cell(obj=sprite, coords=sprite.position)
@@ -65,15 +70,34 @@ class TinyShape(GameHandler):
         circle = Circle(
             center=Position(COORDINATE_SPACE / 2, COORDINATE_SPACE / 2), radius=200_000
         )
-        for chosen_one in self.grid.objects_in_circle(circle):
-            # DEMETER SAYS HWHAT
-            chosen_one.owning_cell.remove(chosen_one)
 
+        inner_circle = Circle(
+              center=Position(COORDINATE_SPACE / 2, COORDINATE_SPACE / 2), radius=100_000
+        )
+        circle_objects = set(self.grid.objects_in_circle(circle))
+        inner_circle_objects = {x for x in circle_objects if inner_circle.contains_position(x.position)}
+        annulus_objects = circle_objects - inner_circle_objects
+        self.update_selected_objects(annulus_objects)
+       
         area = Area(top=500_000, left=500_000, right=600_000, bottom=600_000)
         # for chosen_one in self.grid.objects_in_area(area):
         #    chosen_one.current_cell.remove(chosen_one)
         #    chosen_one.position = updater(chosen_one.position)
         self.timed_event_handler.add_event(0.1, self.apply_extra_gravity)
+
+    def update_selected_objects(self, annulus_objects):
+        objects_to_select = annulus_objects - self.selected_objects
+        objects_to_unselect = self.selected_objects - annulus_objects
+        for obj in objects_to_select:
+            if obj.name not in self.selected_textures:
+                self.create_selected_texture(obj)
+            obj.texture = self.selected_textures[obj.name]
+        for obj in objects_to_unselect:
+            obj.texture = self.textures[obj.name]
+        self.selected_objects = annulus_objects
+
+    def create_selected_texture(self, obj):
+        self.selected_textures[obj.name] = self.selected_shape_texture.create_sprite_from_name(obj.name)
 
     def update(self, dt: float) -> None:
         self.current_direction.lerp(self.target_direction, dt)

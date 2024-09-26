@@ -12,3 +12,6 @@ def vibrant():
         (124, 252, 0),  # LawnGreen
         (255, 69, 0),  # OrangeRed
     ]
+
+def without_red(palette):
+    return [[0, g, b] for (r, g, b) in palette]
