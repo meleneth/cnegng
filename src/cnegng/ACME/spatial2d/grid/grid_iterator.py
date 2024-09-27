@@ -30,16 +30,20 @@ class GridIterator:
         self.counter = 0
     
     def iterate(self):
-        """
-        Creates a generator that yields cells from the grid based on their index modulo mod_number.
-        
-        Yields:
-            The next cell in the grid whose index satisfies the condition index % mod_number == current_value.
-        
-        Increments the current_value after each full iteration over the grid.
-        """
-        for index, cell in enumerate(self.grid):
-            if index % self.mod_number == self.current_value:
-                yield cell
-        self.current_value = (self.current_value + 1) % self.mod_number
+        # Get the total number of rows and columns
+        num_rows = len(self.grid.cells)
+        num_cols = len(self.grid.cells[0])
+
+        # Yield grid cells row by row
+        current_row = 0
+        current_col = 0
+        while current_row < num_rows:
+            if current_col < num_cols:
+                # Yield the current grid cell
+                yield self.grid.cells[current_row][current_col]
+                current_col += 1
+            else:
+                # Move to the next row
+                current_row += 1
+                current_col = 0
         

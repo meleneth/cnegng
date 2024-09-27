@@ -1,5 +1,6 @@
 import random
 
+from cnegng.ACME.spatial2d.grid.grid_iterator import GridIterator
 from cnegng.ACME.spatial2d.grid import GridSize
 from cnegng.ACME.spatial2d import Grid
 from cnegng.ACME.spatial2d import Area
@@ -29,6 +30,7 @@ class TinyShape(GameHandler):
         super().__init__(screen_size=(SCREEN_WIDTH, SCREEN_HEIGHT))
         self.target_direction = Motion()
         self.current_direction = Motion(speed=GRAVITY_FORCE)
+        self.special_direction = Motion(speed=GRAVITY_FORCE * 10)
         self.area = Area(
             position=Position(0, 0),
             dimensions=Dimensions(COORDINATE_SPACE, COORDINATE_SPACE),
@@ -37,15 +39,17 @@ class TinyShape(GameHandler):
             Area(top=0, left=0, bottom=SCREEN_HEIGHT, right=SCREEN_WIDTH)
         )
         self.grid = Grid(self.area, grid_size=GridSize(GRID_CELLS, GRID_CELLS))
-        shape_texture = ShapeTexture(palette=vibrant(), shape_size=SHAPE_SIZE)
-        self.selected_shape_texture = ShapeTexture(palette=without_red(vibrant()), shape_size=SHAPE_SIZE)
+        shape_texture = ShapeTexture(palette=without_red(vibrant()), shape_size=SHAPE_SIZE)
+        self.selected_shape_texture = ShapeTexture(palette=vibrant(), shape_size=SHAPE_SIZE)
         self.textures = {
             f"item_{i}": shape_texture.create_sprite_from_name(f"item_{i}")
             for i in range(NUM_TEXTURES)
         }
         self.selected_textures = {}
         self.selected_objects = set()
+        self.every_few = GridIterator(grid=self.grid, mod_number=2)
 
+        self.sprites = []
         # Generate 20,000 sprites, each with a random texture from the 10,000
         for _ in range(NUM_SPRITES):
             texture_name = random.choice(list(self.textures.keys()))
@@ -56,6 +60,7 @@ class TinyShape(GameHandler):
             )
 
             self.grid.add_to_cell(obj=sprite, coords=sprite.position)
+            self.sprites.append(sprite)
 
         self.change_global_motion()
         self.apply_extra_gravity()
@@ -78,11 +83,19 @@ class TinyShape(GameHandler):
         inner_circle_objects = {x for x in circle_objects if inner_circle.contains_position(x.position)}
         annulus_objects = circle_objects - inner_circle_objects
         self.update_selected_objects(annulus_objects)
-       
-        area = Area(top=500_000, left=500_000, right=600_000, bottom=600_000)
-        # for chosen_one in self.grid.objects_in_area(area):
-        #    chosen_one.current_cell.remove(chosen_one)
-        #    chosen_one.position = updater(chosen_one.position)
+
+        
+        for cell in self.every_few.iterate():
+            escaped_sprites = []
+            for sprite in cell.all_members():
+                if not cell.area.contains(sprite.position):
+                    escaped_sprites.append(sprite)
+            for sprite in escaped_sprites:
+                cell.remove(sprite)
+                if not self.grid.area.contains(sprite.position):
+                    sprite.position = self.grid.area.wrap_within(sprite.position)
+                self.grid.add_to_cell(obj=sprite, coords=sprite.position)
+            
         self.timed_event_handler.add_event(0.1, self.apply_extra_gravity)
 
     def update_selected_objects(self, annulus_objects):
@@ -102,12 +115,17 @@ class TinyShape(GameHandler):
     def update(self, dt: float) -> None:
         self.current_direction.lerp(self.target_direction, dt)
         global_motion_updater = self.current_direction.updater(dt)
+        special_motion_updater = self.special_direction.updater(dt)
+        special_area = Area(100_000, 100_000, 400_000, 400_000)
+        for sprite in list(self.grid.objects_in_area(special_area)):
+            sprite.position = special_motion_updater(sprite.position)
+            sprite.position = special_area.wrap_within(sprite.position)
         for sprite in self.grid.all_objects():
             sprite.position = global_motion_updater(sprite.position)
             sprite.position = sprite.motion.move(sprite.position, dt)
 
     def render(self) -> None:
-        for sprite in self.grid.all_objects():
+        for sprite in self.sprites:
             # what happened to tell, don't ask?
             position = self.area_to_screen(sprite.position)
             self.surface.blit(sprite.texture, (position.x, position.y))

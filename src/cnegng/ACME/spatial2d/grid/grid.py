@@ -220,6 +220,10 @@ class Grid:
                 if cell_area.overlaps_with_circle(circle):
                     yield self.cells[y][x]
 
+    def objects_in_area(self, area : Area, layer="default"):
+        for cell in self.cells_in_area(area):
+            yield from cell.objects_in_area(area, layer)
+
     def objects_in_circle(self, circle : Circle, layer="default"):
         for cell in self.cells_in_circle(circle):
             yield from cell.objects_in_circle(circle, layer)
@@ -246,6 +250,12 @@ class GridCell:
         """Yield members within the circle."""
         for obj in self.object_container.get_all(layer):
             if circle.contains_position(obj.position):
+                yield obj
+
+    def objects_in_area(self, area: "Area", layer="default"):
+        """Yield members within the area."""
+        for obj in self.object_container.get_all(layer):
+            if area.contains(obj.position):
                 yield obj
 
     def add_to_cell(self, object, layer="default"):

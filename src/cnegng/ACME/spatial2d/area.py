@@ -178,6 +178,11 @@ class Area:
         """
         return self.right - self.left
 
+    def wrap_within(self, position: Position) -> Position:
+        wrapped_x = (position.x - self.left) % self.width + self.left
+        wrapped_y = (position.y - self.top) % self.height + self.top
+        return Position(wrapped_x, wrapped_y)
+
     def __repr__(self):
         return f"Area({self.width}x{self.height}@{self.top},{self.left})"
 
