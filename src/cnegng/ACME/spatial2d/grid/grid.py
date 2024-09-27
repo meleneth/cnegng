@@ -6,7 +6,6 @@ from cnegng.ACME.spatial2d.area import Area
 from cnegng.ACME.spatial2d.position import Position
 from cnegng.ACME.spatial2d.circle import Circle
 from cnegng.ACME.spatial2d.grid.collision_query import CollisionQuery
-from cnegng.ACME.spatial2d.grid.grid_indexer import GridIndexer
 from cnegng.ACME.spatial2d.grid.object_container import ObjectContainer
 
 
@@ -84,12 +83,6 @@ class Grid:
         self.cell_width = area.width / grid_size.width
         self.cell_height = area.height / grid_size.height
 
-        self.indexer = GridIndexer(
-            grid_size.width,
-            grid_size.height,
-            area.width / grid_size.width,
-            area.height / grid_size.height,
-        )
         self.cells = [
             [
                 GridCell(
