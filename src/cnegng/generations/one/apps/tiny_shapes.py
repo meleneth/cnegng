@@ -61,9 +61,18 @@ class TinyShape(GameHandler):
 
             self.grid.add_to_cell(obj=sprite, coords=sprite.position)
             self.sprites.append(sprite)
+        self.outer_circle = Circle(
+            center=Position(COORDINATE_SPACE / 2, COORDINATE_SPACE / 2), radius=200_000
+        )
+
+        self.inner_circle = Circle(
+              center=Position(COORDINATE_SPACE / 2, COORDINATE_SPACE / 2), radius=100_000
+        )
 
         self.change_global_motion()
         self.apply_extra_gravity()
+
+
 
     def change_global_motion(self):
         self.target_direction.randomize()
@@ -72,19 +81,11 @@ class TinyShape(GameHandler):
     def apply_extra_gravity(self):
         down = Motion(direction=0, speed=100_000)
         updater = down.updater()
-        circle = Circle(
-            center=Position(COORDINATE_SPACE / 2, COORDINATE_SPACE / 2), radius=200_000
-        )
-
-        inner_circle = Circle(
-              center=Position(COORDINATE_SPACE / 2, COORDINATE_SPACE / 2), radius=100_000
-        )
-        circle_objects = set(self.grid.objects_in_circle(circle))
-        inner_circle_objects = {x for x in circle_objects if inner_circle.contains_position(x.position)}
+        circle_objects = set(self.grid.objects_in_circle(self.outer_circle))
+        inner_circle_objects = {x for x in circle_objects if self.inner_circle.contains_position(x.position)}
         annulus_objects = circle_objects - inner_circle_objects
         self.update_selected_objects(annulus_objects)
 
-        
         for cell in self.every_few.iterate():
             escaped_sprites = []
             for sprite in cell.all_members():
@@ -123,6 +124,9 @@ class TinyShape(GameHandler):
         for sprite in self.grid.all_objects():
             sprite.position = global_motion_updater(sprite.position)
             sprite.position = sprite.motion.move(sprite.position, dt)
+        for sprite in self.selected_objects:
+            sprite.position = self.outer_circle.move_along_arc(position=sprite.position, speed=5_000 * 8, dt=dt)
+
 
     def render(self) -> None:
         for sprite in self.sprites:
