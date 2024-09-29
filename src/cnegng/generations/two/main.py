@@ -3,16 +3,14 @@ import pygame
 from cnegng.generations.two.log_widget import LogWidget
 from cnegng.generations.two.battle_royale import BattleRoyale
 from cnegng.generations.one.base.tiny_shapes_base import TinyShapesBase
-from cnegng.ACME.spatial2d.grid.grid_iterator import GridIterator
 from cnegng.ACME.spatial2d.grid import GridSize
 from cnegng.ACME.spatial2d import Grid
 from cnegng.ACME.spatial2d import Area
-from cnegng.ACME.spatial2d import Circle
 from cnegng.ACME.spatial2d import Dimensions
-from cnegng.ACME.spatial2d import Position
+from cnegng.ACME.spatial2d import Position, Motion
 from cnegng.generations.one.palette import vibrant, without_red
 from cnegng.generations.one import ShapeTexture
-from cnegng.generations.one import Sprite
+from cnegng.generations.two.sprite import Sprite
 from cnegng.generations.two.name_generators import ElvishNameGenerator
 
 SHAPE_SIZE = 24  # Size of each sprite
@@ -45,7 +43,7 @@ DIFFICULTY_COLORS = {
 }
 class MyBattleRoyale(TinyShapesBase):
     def setup_basic_helpers(self):
-        self.logger = LogWidget(10, 10, 780, 200)
+        self.logger = LogWidget(10, 10, 780, 200, player_lookup=self)
         self.logger("Reticulating Splines")
         self.textures = {}
 
@@ -55,8 +53,12 @@ class MyBattleRoyale(TinyShapesBase):
         )
         self.grid = Grid(self.area, grid_size=GridSize(GRID_CELLS, GRID_CELLS))
         self.contest = BattleRoyale()
+        self.players_by_name = {}
 
         super().setup_basic_helpers()
+
+    def player_for_name(self, player_name):
+        return self.players_by_name[player_name]
 
     def setup_basic_textures(self):
         pass
@@ -69,7 +71,7 @@ class MyBattleRoyale(TinyShapesBase):
         # Generate 20,000 sprites, each with a random texture from the 10,000
         for _ in range(NUM_PLAYERS):
             name = f"{namer.generate_name()} {namer.generate_name()}"
-            self.logger(f'creating a Player named {name}')
+            self.logger("".join(['creating a Player named {player:', name, '}']))
             if name not in self.textures:
                 self.textures[name] = shape_texture.create_sprite_from_name(name)
             else:
@@ -78,10 +80,11 @@ class MyBattleRoyale(TinyShapesBase):
                 name=name,
                 position=self.area.random_position_inside(),
                 texture=self.textures[name],
+                motion = Motion(direction=0, speed=0)
             )
 
             self.grid.add_to_cell(obj=sprite, coords=sprite.position)
-
+            self.players_by_name[sprite.name] = sprite
             self.sprites.append(sprite)
 
     def render(self) -> None:
@@ -98,10 +101,10 @@ class MyBattleRoyale(TinyShapesBase):
             color = DIFFICULTY_COLORS[difficulty]
             pygame.draw.rect(self.surface, 
                              color, 
-                             pygame.Rect(x*10, 
-                                         y*10, 
-                                         10, 
-                                         10))    
+                             pygame.Rect(x*5, 
+                                         y*5 + 400, 
+                                         3, 
+                                         3))    
 
 # Example usage of LogWidget
 def main():
