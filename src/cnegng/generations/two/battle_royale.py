@@ -1,5 +1,8 @@
 import random
 
+from cnegng.generations.two.region import RegionMap
+from cnegng.generations.two.name_generators import ElvishNameGenerator
+
 class BattleRoyale:
     def __init__(self):
         self.critters = set()  # Critters in the map

@@ -1,3 +1,7 @@
+import random
+
+from cnegng.generations.two.terrain import Terrain
+
 class RegionMap:
     def __init__(self, width, height):
         self.width = width
@@ -11,7 +15,7 @@ class RegionMap:
         # Randomly paint regions with arcs and splatters to add variety
         for _ in range(100):  # Number of splatters
             x, y = random.randint(0, width - 1), random.randint(0, height - 1)
-            difficulty = random.randint(2, 10)
+            difficulty = random.randint(2, 9)
             self.spray_paint(map, x, y, difficulty)
         
         return map
@@ -31,3 +35,10 @@ class RegionMap:
         grid_x = min(max(0, int(x / 10000)), self.width - 1)
         grid_y = min(max(0, int(y / 10000)), self.height - 1)
         return self.map[grid_x][grid_y]
+
+    def all_regions(self):
+        """Generator to iterate over all regions in the map."""
+        for grid_x in range(self.width):
+            for grid_y in range(self.height):
+                region = self.map[grid_y][grid_x]
+                yield grid_x, grid_y, region.terrain_type, region.difficulty
