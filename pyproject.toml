@@ -29,6 +29,7 @@ packages = ["src/cnegng"]
 [project.scripts]
 cnegng = "cnegng.main:main"
 cgtinyshapes = "cnegng.generations.one.apps.tiny_shapes:main"
+cgbr = "cnegng.generations.two.main:main"
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
