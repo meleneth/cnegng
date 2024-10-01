@@ -109,8 +109,18 @@ class Area:
         scale_y = other.height / self.height
 
         def _scale(position: Position) -> Position:
-            new_x = other.left + (position.x - self.left) * scale_x
-            new_y = other.top + (position.y - self.top) * scale_y
+            # Step 1: Translate position relative to the source area (self)
+            translated_x = position.x - self.left
+            translated_y = position.y - self.top
+
+            # Step 2: Apply scaling
+            scaled_x = translated_x * scale_x
+            scaled_y = translated_y * scale_y
+
+            # Step 3: Translate the scaled position to the target area's coordinate system
+            new_x = other.left + scaled_x
+            new_y = other.top + scaled_y
+
             return Position(new_x, new_y)
 
         return _scale

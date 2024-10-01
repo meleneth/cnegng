@@ -1,4 +1,5 @@
 import random
+from collections import defaultdict
 
 from cnegng.generations.two.terrain import Terrain
 
@@ -100,3 +101,15 @@ class RegionMap:
             for grid_y in range(self.height):
                 region = self.map[grid_y][grid_x]
                 yield grid_x, grid_y, region.terrain_type, region.difficulty
+
+    def difficulty_count(self):
+        """Count the occurrences of each difficulty level in the map."""
+        difficulty_counter = defaultdict(int)
+        
+        # Iterate over all regions in the map
+        for _, _, _, difficulty in self.all_regions():
+            difficulty_counter[difficulty] += 1
+
+        # Convert the counter to a list of tuples sorted by difficulty level
+        return sorted(difficulty_counter.items())
+

@@ -1,4 +1,5 @@
 from typing import Tuple
+import math
 import random
 import copy
 
@@ -48,5 +49,14 @@ class Position:
     def clone(self):
         return copy.deepcopy(self)
     
+    def distance(self, other: "Position") -> float:
+        """
+        Calculates the Euclidean distance between this position and another position.
+
+        :param other: The other Position object
+        :return: The distance between the two positions
+        """
+        return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
+
     def __repr__(self):
         return f"Position(x={self.x:.2f}, y={self.y:.2f})"
