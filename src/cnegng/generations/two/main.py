@@ -180,17 +180,33 @@ class MyBattleRoyale(TinyShapesBase):
     # Function to draw a dashed line
     def draw_dashed_line(self, screen, color, start_pos : Position, end_pos : Position, dash_length=20):
         # Compute total distance and number of dashes
-        dist_x = abs(end_pos.x - start_pos.x)
-        dist_y = abs(end_pos.y - start_pos.y)
+        dist_x = end_pos.x - start_pos.x  # Can be positive or negative
+        dist_y = end_pos.y - start_pos.y  # Can be positive or negative
         
-        dashes = int(start_pos.distance(end_pos) // dash_length)
+        # Calculate the total distance using the distance method
+        total_distance = start_pos.distance(end_pos)
         
+        # Calculate the number of dashes
+        dashes = int(total_distance // dash_length)
+        
+        # Normalize the direction of the line by calculating the unit vector for each dash
+        if dashes > 0:
+            step_x = dist_x / dashes  # Step in x direction for each dash
+            step_y = dist_y / dashes  # Step in y direction for each dash
+        else:
+            step_x, step_y = 0, 0  # Handle edge cases where dashes might be zero
+
         # Iterate through dashes
         for i in range(dashes):
-            start_x = start_pos.x + (dist_x / dashes) * i
-            start_y = start_pos.y + (dist_y / dashes) * i
-            end_x = start_pos.x + (dist_x / dashes) * (i + 0.5)
-            end_y = start_pos.y + (dist_y / dashes) * (i + 0.5)
+            # Start point of the dash
+            start_x = start_pos.x + step_x * i
+            start_y = start_pos.y + step_y * i
+            
+            # End point of the dash (halfway between two steps)
+            end_x = start_pos.x + step_x * (i + 0.5)
+            end_y = start_pos.y + step_y * (i + 0.5)
+            
+            # Draw the dashed segment
             pygame.draw.line(screen, color, (start_x, start_y), (end_x, end_y), 3)
 
 
