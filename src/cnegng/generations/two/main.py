@@ -95,6 +95,7 @@ class MyBattleRoyale(TinyShapesBase):
         self.area_to_minimap = self.area.scale_by(
             Area(top=400, left=0, bottom=900, right=500)
         )
+        self._dashed_flashy_line_color = 0
 
 
     @lru_cache(maxsize=None)
@@ -146,7 +147,7 @@ class MyBattleRoyale(TinyShapesBase):
 
     
     def draw_bus_path(self):
-        if self.frame_no % 5 == 0:
+        if self.frame_no % 3 == 0:
             color = RED
         else:
             color = BRIGHT_BLUE
@@ -206,6 +207,11 @@ class MyBattleRoyale(TinyShapesBase):
             end_x = start_pos.x + step_x * (i + 0.5)
             end_y = start_pos.y + step_y * (i + 0.5)
             
+            self._dashed_flashy_line_color+=1
+            color = BRIGHT_BLUE
+            if self._dashed_flashy_line_color % 4 == 0:
+                color = RED
+
             # Draw the dashed segment
             pygame.draw.line(screen, color, (start_x, start_y), (end_x, end_y), 3)
 
