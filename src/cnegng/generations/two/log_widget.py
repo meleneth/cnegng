@@ -53,7 +53,6 @@ class LogWidget:
             # Handle the player tag and fetch the player sprite
             player_name = match.group(1)
             player_sprite = self.player_lookup.player_for_name(player_name)
-            print(f"player sprite is {player_sprite.name}")
             if player_sprite:
                 # Draw the player's sprite before their name
                 player_sprite.draw_at(surface, Position(cursor_x, y))  # Assuming the sprite has a `draw` method

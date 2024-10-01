@@ -1,4 +1,7 @@
-class Chest:
+class ImplementMe(Exception):
+    pass
+
+class LootChest:
     def __init__(self, position):
         self.position = position
         self.is_open = False
@@ -13,6 +16,7 @@ class Chest:
         # Use the existing loot table logic to generate loot based on difficulty
         # For example, fetch terrain difficulty to scale loot rewards
         terrain = self.get_terrain_difficulty()
+        raise ImplementMe("Chest opened")
         return generate_loot_table(terrain.difficulty)
 
     def get_terrain_difficulty(self):
