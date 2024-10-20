@@ -1,7 +1,7 @@
 class CollisionQuery:
     """
     Handles collision-based queries in the grid.
-    
+
     Attributes
     ----------
     grid : Grid

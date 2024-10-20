@@ -26,8 +26,8 @@ GRID_CELLS = 20
 
 class TinyShapesBase(GameHandler):
     def __init__(self):
-        self.SCREEN_WIDTH=SCREEN_WIDTH
-        self.SCREEN_HEIGHT=SCREEN_HEIGHT
+        self.SCREEN_WIDTH = SCREEN_WIDTH
+        self.SCREEN_HEIGHT = SCREEN_HEIGHT
         self.SHAPE_SIZE = SHAPE_SIZE
         self.NUM_SPRITES = NUM_SPRITES
         self.NUM_TEXTURES = NUM_TEXTURES

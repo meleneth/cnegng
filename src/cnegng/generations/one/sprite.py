@@ -7,11 +7,13 @@ from cnegng.ACME.spatial2d import Motion
 
 
 class Sprite:
-    def __init__(self, name: str, texture: pygame.Surface, position: Optional[Position] = None):
+    def __init__(
+        self, name: str, texture: pygame.Surface, position: Optional[Position] = None
+    ):
         self.position = position
         if self.position is None:
             self.position = Position()
-        self.motion = Motion()
+        self.motion = Motion(0, 0)
         self.texture = texture
         self.current_cell = None
         self.name = name

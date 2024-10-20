@@ -15,7 +15,7 @@ class TimedEventHandler:
         A heap storing events with their absolute expiration time and associated callbacks.
     _current_time : float
         Internal clock to manage virtual time.
-    _counter : 
+    _counter :
         ever increasing value so heap doesn't try to compare callables to determine sort order
     """
 

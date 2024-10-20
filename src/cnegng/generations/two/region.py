@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from cnegng.generations.two.terrain import Terrain
 
+
 class RegionMap:
     def __init__(self, width, height):
         self.width = width
@@ -21,7 +22,7 @@ class RegionMap:
         self.blur_map(map)
         self.blur_average(map)
         return map
-    
+
     def blur_map(self, map, passes=10, blurriness=0.5):
         """Perform blurring passes to cluster similar difficulties."""
         for _ in range(passes):
@@ -29,36 +30,41 @@ class RegionMap:
                 for y in range(self.height):
                     # Get the current region's difficulty
                     current_region = map[x][y]
-                    
+
                     # Choose a random neighboring region
                     neighbors = self.get_neighbors(x, y)
                     if neighbors:
                         neighbor_x, neighbor_y = random.choice(neighbors)
                         neighbor_region = map[neighbor_x][neighbor_y]
-                        
+
                         # Swap difficulties based on the blurriness factor
                         if random.random() < blurriness:
-                            current_region.difficulty, neighbor_region.difficulty = neighbor_region.difficulty, current_region.difficulty
+                            current_region.difficulty, neighbor_region.difficulty = (
+                                neighbor_region.difficulty,
+                                current_region.difficulty,
+                            )
 
     def blur_average(self, map, passes=5):
         """Perform averaging blur to smooth out difficulty values."""
         for _ in range(passes):
             # Create a copy of the current map difficulties
-            new_difficulties = [[0 for _ in range(self.height)] for _ in range(self.width)]
-            
+            new_difficulties = [
+                [0 for _ in range(self.height)] for _ in range(self.width)
+            ]
+
             for x in range(self.width):
                 for y in range(self.height):
                     # Get the current region and its neighbors
                     neighbors = self.get_neighbors(x, y, include_self=True)
-                    
+
                     # Calculate the average difficulty of the neighbors, including the current cell
                     total_difficulty = 0
                     for nx, ny in neighbors:
                         total_difficulty += map[nx][ny].difficulty
-                    
+
                     # Set the new difficulty to the rounded average
                     new_difficulties[x][y] = round(total_difficulty / len(neighbors))
-            
+
             # Update the map with new smoothed difficulties
             for x in range(self.width):
                 for y in range(self.height):
@@ -105,11 +111,10 @@ class RegionMap:
     def difficulty_count(self):
         """Count the occurrences of each difficulty level in the map."""
         difficulty_counter = defaultdict(int)
-        
+
         # Iterate over all regions in the map
         for _, _, _, difficulty in self.all_regions():
             difficulty_counter[difficulty] += 1
 
         # Convert the counter to a list of tuples sorted by difficulty level
         return sorted(difficulty_counter.items())
-

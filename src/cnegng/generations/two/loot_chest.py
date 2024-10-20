@@ -1,6 +1,7 @@
 class ImplementMe(Exception):
     pass
 
+
 class LootChest:
     def __init__(self, position):
         self.position = position

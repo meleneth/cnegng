@@ -1,5 +1,6 @@
 from cnegng.ACME.events.event_bus import EventBus
 
+
 class XPSystem:
     """
     A system to manage player XP and levels, with level-up notifications.
@@ -39,9 +40,9 @@ class XPSystem:
         """
         if level >= self.MAX_LEVEL:
             return 0
-        return int(self.BASE_XP * (level ** self.XP_FACTOR))
+        return int(self.BASE_XP * (level**self.XP_FACTOR))
 
-    def add_xp(self, player: 'Player', xp: int):
+    def add_xp(self, player: "Player", xp: int):
         """
         Add XP to a player and handle level-ups if the player reaches the required XP for the next level.
 
@@ -57,7 +58,7 @@ class XPSystem:
         while player.xp >= self.calculate_xp_for_next_level(player.level):
             self.level_up(player)
 
-    def level_up(self, player: 'Player'):
+    def level_up(self, player: "Player"):
         """
         Handle leveling up the player by increasing their level and broadcasting a LEVEL_UP event.
 
@@ -68,4 +69,4 @@ class XPSystem:
             player.xp = 0  # Reset XP after level up (or adjust as per preference)
 
             # Publish a LEVEL_UP event
-            self.event_bus.publish('LEVEL_UP', player)
+            self.event_bus.publish("LEVEL_UP", player)

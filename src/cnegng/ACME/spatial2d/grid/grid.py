@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import copy
 from collections import defaultdict
 from typing import Generator
+from dataclasses import dataclass
 
 from cnegng.ACME.spatial2d.area import Area
 from cnegng.ACME.spatial2d.position import Position
@@ -13,15 +16,14 @@ class PositionOutsideGrid(Exception):
     pass
 
 
+@dataclass
 class GridSize:
-    def __init__(self, width: int, height: int):
-        if width <= 0 or height <= 0:
-            raise ValueError("GridSize must have positive width and height.")
-        self.width = width
-        self.height = height
+    width: int
+    height: int
 
-    def __repr__(self):
-        return f"GridSize(width={self.width}, height={self.height})"
+    def __post_init__(self):
+        if self.width <= 0 or self.height <= 0:
+            raise ValueError("GridSize must have positive width and height.")
 
     def clone(self):
         return copy.deepcopy(self)
@@ -36,13 +38,10 @@ class GridSize:
         return 0 <= grid_coord.x <= self.width and 0 <= grid_coord.y <= self.height
 
 
+@dataclass
 class GlobalCoord:
-    def __init__(self, x: float, y: float):
-        self.x = x
-        self.y = y
-
-    def __repr__(self):
-        return f"GlobalCoord(x={self.x}, y={self.y})"
+    x: float
+    y: float
 
     def to_grid_coord(self, grid: "Grid"):
         """Convert a global coordinate to a grid coordinate by dividing by grid size."""
@@ -53,14 +52,11 @@ class GlobalCoord:
         )
 
 
+@dataclass
 class GridCoord:
-    def __init__(self, grid: "Grid", x: int, y: int):
-        self.grid = grid  # Store a reference to the associated Grid
-        self.x = x
-        self.y = y
-
-    def __repr__(self):
-        return f"GridCoord(grid=Grid({self.grid.grid_size.width}x{self.grid.grid_size.height}), x={self.x}, y={self.y})"
+    grid: Grid
+    x: int
+    y: int
 
     def clone(self):
         return copy.deepcopy(self)
@@ -220,11 +216,11 @@ class Grid:
                 if cell_area.overlaps_with_circle(circle):
                     yield self.cells[y][x]
 
-    def objects_in_area(self, area : Area, layer="default"):
+    def objects_in_area(self, area: Area, layer="default"):
         for cell in self.cells_in_area(area):
             yield from cell.objects_in_area(area, layer)
 
-    def objects_in_circle(self, circle : Circle, layer="default"):
+    def objects_in_circle(self, circle: Circle, layer="default"):
         for cell in self.cells_in_circle(circle):
             yield from cell.objects_in_circle(circle, layer)
 
@@ -266,7 +262,7 @@ class GridCell:
 
     def all_members(self, layer=None):
         return self.object_container.get_all(layer=layer)
-      
+
     def members_in_area(self, area: "Area"):
         """Yield members within the area."""
         for layer in self.contents:

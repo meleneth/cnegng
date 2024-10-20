@@ -4,6 +4,7 @@ import random
 import copy
 from dataclasses import dataclass
 
+
 @dataclass
 class Position:
     """
@@ -12,9 +13,10 @@ class Position:
     :param x: The x coordinate
     :param y: The y coordinate
     """
+
     x: float
     y: float
-    
+
     def randomize(
         self,
         x_range: Tuple[float, float] = (0, 1000),
@@ -47,7 +49,7 @@ class Position:
 
     def clone(self):
         return copy.deepcopy(self)
-    
+
     def distance(self, other: "Position") -> float:
         """
         Calculates the Euclidean distance between this position and another position.

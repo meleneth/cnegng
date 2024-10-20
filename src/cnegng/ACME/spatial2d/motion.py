@@ -8,6 +8,7 @@ from typing import NewType
 from cnegng.ACME.spatial2d.basic_types import Radian, Speed, DeltaTime
 from cnegng.ACME.spatial2d.position import Position
 
+
 @dataclass
 class Motion:
     """
@@ -16,6 +17,7 @@ class Motion:
     :param direction: The direction of the motion in radians
     :param speed: The speed of the motion
     """
+
     direction: Radian
     speed: Speed
 
@@ -30,7 +32,10 @@ class Motion:
         :param position: The position to move
         :param dt: The time delta (default is 1.0)
         """
-        return Position(x=position.x + self.speed * dt * math.cos(self.direction), y= position.y + self.speed * dt * math.sin(self.direction))
+        return Position(
+            x=position.x + self.speed * dt * math.cos(self.direction),
+            y=position.y + self.speed * dt * math.sin(self.direction),
+        )
 
     def x(self, dt: DeltaTime):
         return self.speed * dt * math.cos(self.direction)

@@ -1,5 +1,6 @@
 import copy
 
+
 class Dimensions:
     """
     Represents a 2D dimension with width and height.
@@ -20,6 +21,6 @@ class Dimensions:
         calculates width * height
         """
         return self.width * self.height
-    
+
     def __repr__(self):
         return f"Dimensions({self.width}, {self.height})"

@@ -6,8 +6,9 @@ from cnegng.generations.two.region import RegionMap
 from cnegng.generations.two.name_generators import ElvishNameGenerator
 from cnegng.ACME.spatial2d.dimensions import Dimensions
 
+
 class BattleRoyale:
-    def __init__(self, dimensions : Dimensions):
+    def __init__(self, dimensions: Dimensions):
         self.dimensions = dimensions
         self.critters = set()  # Critters in the map
         self.chests = set()  # Chests for loot
@@ -17,23 +18,22 @@ class BattleRoyale:
 
     @lru_cache(maxsize=None)
     def bus_path(self):
-        z1 = random.randint(200_000, 800_000) # YES OFFICER THIS HARDCODE RIGHT HERE
+        z1 = random.randint(200_000, 800_000)  # YES OFFICER THIS HARDCODE RIGHT HERE
         z2 = random.randint(200_000, 800_000)
-        
+
         is_vertical = random.choice([True, False])
-        
+
         if is_vertical:
             start_pos = Position(z1, 0)
             end_pos = Position(z2, self.dimensions.height)
         else:
             start_pos = Position(0, z1)
             end_pos = Position(self.dimensions.width, z2)
-        
+
         if random.choice([True, False]):
             start_pos, end_pos = end_pos, start_pos
 
         return start_pos, end_pos
-
 
     def _sets_to_update(self):
         return [self.critters, self.projectiles, self.players]

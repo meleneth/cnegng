@@ -20,8 +20,10 @@ GRID_CELLS = 20
 NUM_PLAYERS = 100
 BUS_DRIVER_NAME = "Vallen Liaandor"
 
+
 class DuplicateName(Exception):
     pass
+
 
 # Colors to interpolate between
 GREEN = (0, 255, 0)
@@ -36,18 +38,20 @@ DIFFICULTY_LEVELS = 9  # Change to 10 if necessary
 
 # Hardcoded color palette for difficulty levels 1 to 9
 DIFFICULTY_COLORS = {
-    1: (0, 255, 0),     # Green
-    2: (128, 255, 0),   # Light Green
-    3: (192, 255, 0),   # Yellow-Green
-    4: (255, 255, 0),   # Yellow
-    5: (255, 192, 0),   # Light Yellow
+    1: (0, 255, 0),  # Green
+    2: (128, 255, 0),  # Light Green
+    3: (192, 255, 0),  # Yellow-Green
+    4: (255, 255, 0),  # Yellow
+    5: (255, 192, 0),  # Light Yellow
     6: (255, 128, 64),  # Purple-Yellow
     7: (192, 64, 192),  # Light Purple
-    8: (128, 0, 128),   # Purple
-    9: (255, 0, 0)      # Red
+    8: (128, 0, 128),  # Purple
+    9: (255, 0, 0),  # Red
 }
+
+
 class CachedDifficultyRenderer:
-    def __init__(self, region_map : RegionMap, font_size=24):
+    def __init__(self, region_map: RegionMap, font_size=24):
         self.region_map = region_map
         self.difficulty_cache = None
         self.font_size = font_size
@@ -57,14 +61,16 @@ class CachedDifficultyRenderer:
     def difficulty_counts(self):
         """Calculate the difficulty counts and cache the results."""
         return self.region_map.difficulty_count()
-            
-    def render(self, screen, position : Position):
+
+    def render(self, screen, position: Position):
         """Render the difficulty list on the given screen."""
-        
+
         # Render the list of difficulties
         for difficulty, count in self.difficulty_counts():
             # Get the color for the difficulty
-            color = DIFFICULTY_COLORS.get(difficulty, (255, 255, 255))  # Default to white
+            color = DIFFICULTY_COLORS.get(
+                difficulty, (255, 255, 255)
+            )  # Default to white
 
             # Render the text using the freetype module
             text = f"Difficulty {difficulty}: {count} occurrences"
@@ -76,6 +82,7 @@ class CachedDifficultyRenderer:
     def clear_cache(self):
         """Clear the cached difficulty counts."""
         self.difficulty_cache = None
+
 
 class MyBattleRoyale(TinyShapesBase):
     def setup_basic_helpers(self):
@@ -102,7 +109,6 @@ class MyBattleRoyale(TinyShapesBase):
         )
         self._dashed_flashy_line_color = 0
 
-
     @lru_cache(maxsize=None)
     def difficulty_renderer(self):
         return CachedDifficultyRenderer(self.contest.region_map)
@@ -119,13 +125,15 @@ class MyBattleRoyale(TinyShapesBase):
         shape_texture = ShapeTexture(palette=vibrant(), shape_size=SHAPE_SIZE)
         namer = ElvishNameGenerator()
         self.bus_driver_texture = shape_texture.create_sprite_from_name(BUS_DRIVER_NAME)
-        self.battle_bus = Sprite(name=BUS_DRIVER_NAME,
-                          position=Position(0, 0),
-                          texture=self.bus_driver_texture,
-                          motion=Motion(direction=0, speed=0))
+        self.battle_bus = Sprite(
+            name=BUS_DRIVER_NAME,
+            position=Position(0, 0),
+            texture=self.bus_driver_texture,
+            motion=Motion(direction=0, speed=0),
+        )
         for _ in range(NUM_PLAYERS):
             name = f"{namer.generate_name()} {namer.generate_name()}"
-            self.logger('creating a Player named {player:', name, '}')
+            self.logger("creating a Player named {player:", name, "}")
             if name not in self.textures:
                 self.textures[name] = shape_texture.create_sprite_from_name(name)
             else:
@@ -134,7 +142,7 @@ class MyBattleRoyale(TinyShapesBase):
                 name=name,
                 position=self.area.random_position_inside(),
                 texture=self.textures[name],
-                motion = Motion(direction=0, speed=0)
+                motion=Motion(direction=0, speed=0),
             )
 
             self.grid.add_to_cell(obj=sprite, coords=sprite.position, layer="player")
@@ -143,7 +151,7 @@ class MyBattleRoyale(TinyShapesBase):
             self.sprites.append(sprite)
 
     def render(self) -> None:
-        self.frame_no+=1
+        self.frame_no += 1
         self.draw_background()
         self.draw_players()
         self.logger.draw(self.surface)
@@ -164,47 +172,49 @@ class MyBattleRoyale(TinyShapesBase):
         else:
             color = BRIGHT_BLUE
         start_pos, end_pos = self.contest.bus_path()
-        self.draw_dashed_line(self.surface, color, self.area_to_minimap(start_pos), self.area_to_minimap(end_pos))
+        self.draw_dashed_line(
+            self.surface,
+            color,
+            self.area_to_minimap(start_pos),
+            self.area_to_minimap(end_pos),
+        )
 
     def draw_bus(self):
         position = self.area_to_minimap(self.battle_bus.position)
         self.surface.blit(self.bus_driver_texture, (position.x, position.y))
-
 
     # Function to draw the background
     # TODO: consider caching at least the region map layer to a texture
     # instead of drawing it in full every frame
     def draw_background(self):
         for x, y, _, difficulty in self.contest.region_map.all_regions():
-            pygame.draw.rect(self.surface, 
-                             DIFFICULTY_COLORS[difficulty], 
-                             pygame.Rect(x*5, 
-                                         y*5 + 400, 
-                                         3, 
-                                         3))  
-            
+            pygame.draw.rect(
+                self.surface,
+                DIFFICULTY_COLORS[difficulty],
+                pygame.Rect(x * 5, y * 5 + 400, 3, 3),
+            )
+
     def draw_minimap_player_dots(self):
         for player in self.players:
             area_coords = self.area_to_minimap(player.position)
-            pygame.draw.rect(self.surface, 
-                    WHITE, 
-                    pygame.Rect(area_coords.x, 
-                                area_coords.y, 
-                                4, 
-                                4))
+            pygame.draw.rect(
+                self.surface, WHITE, pygame.Rect(area_coords.x, area_coords.y, 4, 4)
+            )
 
     # Function to draw a dashed line
-    def draw_dashed_line(self, screen, color, start_pos : Position, end_pos : Position, dash_length=20):
+    def draw_dashed_line(
+        self, screen, color, start_pos: Position, end_pos: Position, dash_length=20
+    ):
         # Compute total distance and number of dashes
         dist_x = end_pos.x - start_pos.x  # Can be positive or negative
         dist_y = end_pos.y - start_pos.y  # Can be positive or negative
-        
+
         # Calculate the total distance using the distance method
         total_distance = start_pos.distance(end_pos)
-        
+
         # Calculate the number of dashes
         dashes = int(total_distance // dash_length)
-        
+
         # Normalize the direction of the line by calculating the unit vector for each dash
         if dashes > 0:
             step_x = dist_x / dashes  # Step in x direction for each dash
@@ -217,12 +227,12 @@ class MyBattleRoyale(TinyShapesBase):
             # Start point of the dash
             start_x = start_pos.x + step_x * i
             start_y = start_pos.y + step_y * i
-            
+
             # End point of the dash (halfway between two steps)
             end_x = start_pos.x + step_x * (i + 0.5)
             end_y = start_pos.y + step_y * (i + 0.5)
-            
-            self._dashed_flashy_line_color+=1
+
+            self._dashed_flashy_line_color += 1
             color = BRIGHT_BLUE
             if self._dashed_flashy_line_color % 4 == 0:
                 color = RED
