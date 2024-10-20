@@ -2,8 +2,9 @@ from typing import Tuple
 import math
 import random
 import copy
+from dataclasses import dataclass
 
-
+@dataclass
 class Position:
     """
     Represents a 2D position in space.
@@ -11,11 +12,9 @@ class Position:
     :param x: The x coordinate
     :param y: The y coordinate
     """
-
-    def __init__(self, x: float = 0.0, y: float = 0.0):
-        self.x = x
-        self.y = y
-
+    x: float
+    y: float
+    
     def randomize(
         self,
         x_range: Tuple[float, float] = (0, 1000),
@@ -57,6 +56,3 @@ class Position:
         :return: The distance between the two positions
         """
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
-
-    def __repr__(self):
-        return f"Position(x={self.x:.2f}, y={self.y:.2f})"

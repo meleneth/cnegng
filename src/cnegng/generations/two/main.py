@@ -18,6 +18,7 @@ from cnegng.generations.two.name_generators import ElvishNameGenerator
 SHAPE_SIZE = 24  # Size of each sprite
 GRID_CELLS = 20
 NUM_PLAYERS = 100
+BUS_DRIVER_NAME = "Vallen Liaandor"
 
 class DuplicateName(Exception):
     pass
@@ -92,6 +93,10 @@ class MyBattleRoyale(TinyShapesBase):
         self.players_by_name = {}
         super().setup_basic_helpers()
         # area is expected to be setup by the time this is called
+        # janky AF, this isn't leaky it's a flood
+        # if you have time to read this comment you have time to fix it
+        # no questions please I'm a very important man and so very busy
+        # ^^^ --- sarcasm
         self.area_to_minimap = self.area.scale_by(
             Area(top=400, left=0, bottom=900, right=500)
         )
@@ -113,9 +118,14 @@ class MyBattleRoyale(TinyShapesBase):
 
         shape_texture = ShapeTexture(palette=vibrant(), shape_size=SHAPE_SIZE)
         namer = ElvishNameGenerator()
+        self.bus_driver_texture = shape_texture.create_sprite_from_name(BUS_DRIVER_NAME)
+        self.battle_bus = Sprite(name=BUS_DRIVER_NAME,
+                          position=Position(0, 0),
+                          texture=self.bus_driver_texture,
+                          motion=Motion(direction=0, speed=0))
         for _ in range(NUM_PLAYERS):
             name = f"{namer.generate_name()} {namer.generate_name()}"
-            self.logger("".join(['creating a Player named {player:', name, '}']))
+            self.logger('creating a Player named {player:', name, '}')
             if name not in self.textures:
                 self.textures[name] = shape_texture.create_sprite_from_name(name)
             else:
@@ -135,17 +145,19 @@ class MyBattleRoyale(TinyShapesBase):
     def render(self) -> None:
         self.frame_no+=1
         self.draw_background()
-        for sprite in self.sprites:
-            # what happened to tell, don't ask?
-            position = self.area_to_screen(sprite.position)
-            self.surface.blit(sprite.texture, (position.x, position.y))
+        self.draw_players()
         self.logger.draw(self.surface)
         self.difficulty_renderer().render(self.surface, Position(860, 0))
         self.draw_bus_path()
         self.draw_minimap_player_dots()
         self.draw_bus()
 
-    
+    def draw_players(self) -> None:
+        for sprite in self.sprites:
+            # what happened to tell, don't ask?
+            position = self.area_to_screen(sprite.position)
+            self.surface.blit(sprite.texture, (position.x, position.y))
+
     def draw_bus_path(self):
         if self.frame_no % 3 == 0:
             color = RED
@@ -155,14 +167,17 @@ class MyBattleRoyale(TinyShapesBase):
         self.draw_dashed_line(self.surface, color, self.area_to_minimap(start_pos), self.area_to_minimap(end_pos))
 
     def draw_bus(self):
-        pass
+        position = self.area_to_minimap(self.battle_bus.position)
+        self.surface.blit(self.bus_driver_texture, (position.x, position.y))
+
 
     # Function to draw the background
+    # TODO: consider caching at least the region map layer to a texture
+    # instead of drawing it in full every frame
     def draw_background(self):
-        for x, y, terrain, difficulty in self.contest.region_map.all_regions():
-            color = DIFFICULTY_COLORS[difficulty]
+        for x, y, _, difficulty in self.contest.region_map.all_regions():
             pygame.draw.rect(self.surface, 
-                             color, 
+                             DIFFICULTY_COLORS[difficulty], 
                              pygame.Rect(x*5, 
                                          y*5 + 400, 
                                          3, 

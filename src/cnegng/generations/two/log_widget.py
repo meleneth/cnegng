@@ -66,5 +66,5 @@ class LogWidget:
             remaining_message = remaining_message[match.end():]
 
 
-    def __call__(self, message):
-        self.add_message(message)
+    def __call__(self, *message):
+        self.add_message("".join(message))

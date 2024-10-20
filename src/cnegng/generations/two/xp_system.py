@@ -1,3 +1,5 @@
+from cnegng.ACME.events.event_bus import EventBus
+
 class XPSystem:
     """
     A system to manage player XP and levels, with level-up notifications.
@@ -5,7 +7,7 @@ class XPSystem:
     The XP required to level up is determined by the following formula:
 
     .. math::
-       XP_{toLevelUp} = base\_xp \times (level^{factor})
+       XP_{toLevelUp} = base\\_xp \\times (level^{factor})
 
     Where:
     - base_xp is the base amount of XP required to level up from level 1.
