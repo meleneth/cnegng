@@ -65,5 +65,3 @@ class TestObjectContainer:
         container.add(mock_object, layer=4)
         all_objects = container.get_all(layer=4)
         assert mock_object in all_objects
-
-   

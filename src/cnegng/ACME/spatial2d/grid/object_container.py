@@ -28,7 +28,6 @@ class ObjectContainer:
 
         # Add object to the specified layer
         if layer not in self._layers:
-
             self._layers[layer] = set()
 
         self._layers[layer].add(obj)
