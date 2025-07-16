@@ -1,5 +1,7 @@
 import pygame
 from functools import lru_cache
+import random
+from statemachine import StateMachine, State
 
 from cnegng.generations.two.region import RegionMap
 from cnegng.generations.two.log_widget import LogWidget
@@ -142,13 +144,30 @@ class MyBattleRoyale(TinyShapesBase):
                 name=name,
                 position=self.area.random_position_inside(),
                 texture=self.textures[name],
-                motion=Motion(direction=0, speed=0),
+                motion=Motion(
+                        direction=random.uniform(0, 360),  # degrees
+                        speed=random.uniform(0.5, 9000.0)     # adjust range as needed
+                ),
             )
-
-            self.grid.add_to_cell(obj=sprite, coords=sprite.position, layer="player")
             self.players_by_name[sprite.name] = sprite
+            self.grid.add_to_cell(obj=sprite, coords=sprite.position, layer="player")
             self.players.add(sprite)
             self.sprites.append(sprite)
+        self.players_by_name[BUS_DRIVER_NAME] = self.battle_bus
+        self.logger("Your bus driver today is {player:", BUS_DRIVER_NAME, "}")
+        start_pos, end_pos = self.contest.bus_path()
+        self.battle_bus.position = start_pos
+        self.battle_bus.motion = start_pos.aim_at(end_pos)
+        self.battle_bus.motion.speed = 9000
+
+    def update(self, dt: float):
+        """Update the sprite's position based on its speed and direction."""
+        for sprite in self.sprites:
+            sprite.update(dt)
+        self.battle_bus.update(dt)
+        start_pos, end_pos = self.contest.bus_path()
+        self.battle_bus.motion = self.battle_bus.position.aim_at(end_pos)
+        self.battle_bus.motion.speed = 9000
 
     def render(self) -> None:
         self.frame_no += 1

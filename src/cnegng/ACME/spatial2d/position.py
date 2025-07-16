@@ -1,9 +1,10 @@
+from __future__ import annotations
 from typing import Tuple
+
 import math
 import random
 import copy
 from dataclasses import dataclass
-
 
 @dataclass
 class Position:
@@ -49,6 +50,14 @@ class Position:
 
     def clone(self):
         return copy.deepcopy(self)
+
+    def aim_at(self, other: 'Position') -> Motion:
+        from cnegng.ACME.spatial2d.motion import Motion
+        dx = other.x - self.x
+        dy = other.y - self.y
+        angle = math.degrees(math.atan2(dy, dx))  # 0° is east, 90° is north
+        speed = random.uniform(0.5, 3.0)
+        return Motion(direction=angle, speed=speed)
 
     def distance(self, other: "Position") -> float:
         """
